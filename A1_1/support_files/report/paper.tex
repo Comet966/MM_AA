@@ -324,308 +324,147 @@ z = z.
 \section{数值计算与问题解答}
 
 \subsection{基于有限体积法的空间半离散化（线方法）}
-求解非定常热质扩散偏微分方程组的标准现代数值方法是**空间半离散化（Spatial Semi-Discretization）**，在数学与计算力学中通常称为**线方法（Method of Lines, MOL）**。其核心思想是：首先仅在空间坐标上进行网格划分，利用守恒型有限体积法（Finite Volume Method, FVM）完成空间导数的离散，而保留时间导数的连续性，从而将关于连续时空的偏微分方程（PDE）系统转化为标准的一阶常微分方程组初值问题（ODE System）：
+采用线方法仅对空间变量作有限体积离散，保留时间导数连续。由各控制体的热、质通量平衡，可将耦合 PDE 化为初值问题
 \begin{equation}
-\frac{d\mathbf{y}}{dt} = \mathbf{F}(t,\mathbf{y}),\qquad \mathbf{y}(t_0) = \mathbf{y}_0,\label{eq:ode_standard}
+\frac{d\mathbf{y}}{dt}=\mathbf{F}(t,\mathbf{y}),\qquad
+\mathbf{y}=\left[T_0,\ldots,T_N,C_0,\ldots,C_N\right]^T,\qquad
+\mathbf{y}(t_0)=\mathbf{y}_0,\label{eq:ode_standard}
 \end{equation}
-其中状态向量 $\mathbf{y}(t)$ 将全场各个空间离散节点上的温度与干基含水率状态量拼接组合：
-\begin{equation}
-\mathbf{y}(t) = \left[T_0(t), T_1(t), \ldots, T_N(t), C_0(t), C_1(t), \ldots, C_N(t)\right]^T,
-\end{equation}
-右端向量函数 $\mathbf{F}(t,\mathbf{y})$（即数值算法中给出各变量瞬时导数 $\dot{\mathbf{y}}$ 的右端项 RHS）由空间有限体积通量平衡闭合导出。完成空间半离散后，偏微分方程的求解完全转化为标准的常微分方程初值问题，随后即可选用成熟高效的 ODE 求解器对时间层进行步进求解。
+其中 $\mathbf{F}$ 由下述离散通量统一组装。
 
 \subsubsection{径向网格剖分与控制体几何权重}
-对于问题1--3所在的固定物理圆柱域 $0\le r\le R$，将物理半径等距划分为 $N$ 个空间区间：
+对固定圆柱域 $0\le r\le R$ 作等距剖分：
 \begin{equation}
-r_i = i\Delta r,\qquad \Delta r = \frac{R}{N},\qquad i=0,1,\ldots,N,
+r_i=i\Delta r,\quad \Delta r=\frac{R}{N},\quad
+r_{i+1/2}=\frac{r_i+r_{i+1}}{2},\quad
+r_{-1/2}=0,\quad r_{N+1/2}=R.
 \end{equation}
-并在相邻网格节点之间定义半节点界面：
+节点 $i$ 所代表控制体的径向权重和体积分别为
 \begin{equation}
-r_{i+1/2} = \frac{r_i+r_{i+1}}{2},\qquad r_{-1/2} = 0,\qquad r_{N+1/2} = R.
+\omega_i^r=\int_{r_{i-1/2}}^{r_{i+1/2}}r\,dr
+=\frac{r_{i+1/2}^2-r_{i-1/2}^2}{2},\qquad
+\Delta V_i=2\pi L\omega_i^r.
 \end{equation}
-每一个网格节点 $i$ 代表一个围绕该节点的径向同心圆环控制体，其物理空间对应积分区间 $[r_{i-1/2}, r_{i+1/2}]$。对于长度为 $L$ 的圆柱段，该区间的径向体积积分为 $2\pi L \int_{r_{i-1/2}}^{r_{i+1/2}} r\,dr$。由此自然导出各节点的径向几何权重系数：
-\begin{equation}
-\omega_i^r = \int_{r_{i-1/2}}^{r_{i+1/2}} r\,dr = \frac{1}{2}\left(r_{i+1/2}^2 - r_{i-1/2}^2\right),
-\end{equation}
-对应控制微元的物理体积为 $\Delta V_i = 2\pi L \omega_i^r$。该权重系数直接由坐标区间的定积分自然得出，而非人为预设。
 
 \subsubsection{控制体通量平衡与内部节点方程}
-\textbf{为了得到对热传导与水分扩散皆高度普适与泛用的统一数值计算方法，本研究引入广义守恒变量进行换元统一表征}：设广义未知状态场标量为 $\phi$、广义容量系数为 $q$、广义扩散传递系数为 $\Gamma$。通过换元，将传热控制方程\eqref{eq:heat}与传质控制方程\eqref{eq:mass}完全统一为如下通式：
+令 $(\phi,q,\Gamma)=(T,\rho c_p,k)$ 表示传热过程，或令 $(\phi,q,\Gamma)=(C,1,D)$ 表示传质过程，则式\eqref{eq:heat}和式\eqref{eq:mass}可统一写为
 \begin{equation}
 q\frac{\partial\phi}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right),\label{eq:generic_pde}
 \end{equation}
-其中具体换元对应关系严格定义如下：
-\begin{itemize}
-  \item \textbf{热传导系统换元映射}：令 $(\phi, q, \Gamma) = (T, \rho c_p, k)$，其中未知标量 $\phi$ 代表温度 $T$，容量系数 $q$ 代表容积热容 $\rho c_p$，扩散系数 $\Gamma$ 代表导热系数 $k$；
-  \item \textbf{水分扩散系统换元映射}：令 $(\phi, q, \Gamma) = (C, 1, D)$，其中未知标量 $\phi$ 代表干基含水率 $C$，容量系数 $q \equiv 1$ 代表单位质量基准，扩散系数 $\Gamma$ 代表有效扩散系数 $D$。
-\end{itemize}
-\textbf{通过上述换元映射，热场与湿场的空间有限体积离散推导、代数矩阵组装与时间步进求解器完全并轨统一，不仅算法推导紧凑，而且代码层面一套求解内核即可双向通用复用。}
-
-将式\eqref{eq:generic_pde}乘以 $2\pi r L$ 后在控制体单元 $[r_{i-1/2}, r_{i+1/2}]$ 上进行定积分，左侧时间导数项以节点中心值代表控制微元均值，右侧导数积分转化为界面通量之差：
+对第 $i$ 个控制体积分，并以中心差商近似界面梯度，得到内部节点 $i=1,\ldots,N-1$ 的半离散方程
 \begin{equation}
-q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\right|_{r_{i-1/2}}^{r_{i+1/2}} = r_{i+1/2}\Gamma_{i+1/2}\left.\frac{\partial\phi}{\partial r}\right|_{r_{i+1/2}} - r_{i-1/2}\Gamma_{i-1/2}\left.\frac{\partial\phi}{\partial r}\right|_{r_{i-1/2}}.
+\frac{d\phi_i}{dt}=\frac{F_{i+1/2}-F_{i-1/2}}{q_i\omega_i^r},\qquad
+F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}\frac{\phi_{i+1}-\phi_i}{\Delta r},\label{eq:fvm-r}
 \end{equation}
-界面导数采用中心差商近似：$\left.\frac{\partial\phi}{\partial r}\right|_{r_{i+1/2}} \approx \frac{\phi_{i+1}-\phi_i}{\Delta r}$。由此，内部节点 $i=1,\ldots,N-1$ 满足的常微分方程组为：
-\begin{equation}
-\frac{d\phi_i}{dt} = \frac{r_{i+1/2}\Gamma_{i+1/2}\dfrac{\phi_{i+1}-\phi_i}{\Delta r} - r_{i-1/2}\Gamma_{i-1/2}\dfrac{\phi_i-\phi_{i-1}}{\Delta r}}{q_i\omega_i^r}.\label{eq:fvm-r}
-\end{equation}
-为了准确刻画多孔介质中导热阻力与水分扩散阻力的物理串联机理，界面传递系数 $\Gamma_{i+1/2}$ 采用相邻两节点的**调和平均（Harmonic Mean）**\cite{patankar}：
+其中界面系数采用调和平均，以处理相邻控制体间的串联传递阻力\cite{patankar}：
 \begin{equation}
 \Gamma_{i+1/2} = \frac{2\Gamma_i\Gamma_{i+1}}{\Gamma_i+\Gamma_{i+1}}.
 \end{equation}
 
-\subsubsection{边界节点离散、奇点消除与守恒性证明}
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{圆心节点奇点自然规避}：
-  圆心节点 $i=0$ 对应围绕中心轴的柱形控制体，其物理积分区间为 $[0, \Delta r/2]$。左侧边界恰好处于中心对称轴 $r_{-1/2}=0$ 处，其界面几何面积度量为零，界面通量恒为零：$F_{-1/2} = \left.r\Gamma\frac{\partial\phi}{\partial r}\right|_0 \equiv 0$。该控制微元的几何权重通过积分求得：$\omega_0^r = \int_0^{\Delta r/2} r\,dr = \frac{\Delta r^2}{8}$。右侧外界面通量为 $F_{1/2} = r_{1/2}\Gamma_{1/2}\left.\frac{\partial\phi}{\partial r}\right|_{r_{1/2}} \approx \frac{\Delta r}{2}\Gamma_{1/2}\frac{\phi_1-\phi_0}{\Delta r} = \frac{1}{2}\Gamma_{1/2}(\phi_1-\phi_0)$。代入微元通量平衡方程 $q_0\omega_0^r\frac{d\phi_0}{dt} = F_{1/2} - F_{-1/2}$，两端同除以 $q_0\omega_0^r = q_0\frac{\Delta r^2}{8}$，可导出广义标量在圆心节点的演化方程 $\frac{d\phi_0}{dt} = \frac{4\Gamma_{1/2}}{q_0\Delta r^2}(\phi_1-\phi_0)$。分别代入热、质系统换元映射，得到纵向排列的圆心节点常微分方程组：
-  \begin{align}
-  \frac{dT_0}{dt} &= \frac{4k_{1/2}}{\rho_0c_{p,0}}\frac{T_1-T_0}{\Delta r^2},\label{eq:center_T}\\[8pt]
-  \frac{dC_0}{dt} &= 4D_{1/2}\frac{C_1-C_0}{\Delta r^2}.\label{eq:center_C}
-  \end{align}
-  该半离散格式在数值离散层面天然消除了柱坐标系中的 $1/r$ 奇异项，完全避免了在 $r=0$ 处发生除零发散的数值奇异性。
+\subsubsection{边界节点离散与守恒性}
+\textbf{圆心控制体。}
+圆心处柱面面积随 $r\to0$ 自然趋于零，故 $F_0=0$，不存在 $1/r$ 的数值奇点。由
+$\omega_0^r=\int_0^{\Delta r/2}r\,dr=\Delta r^2/8$ 可得
+\begin{align}
+\frac{dT_0}{dt} &= \frac{4k_{1/2}}{\rho_0c_{p,0}}\frac{T_1-T_0}{\Delta r^2},\label{eq:center_T}\\[4pt]
+\frac{dC_0}{dt} &= 4D_{1/2}\frac{C_1-C_0}{\Delta r^2}.\label{eq:center_C}
+\end{align}
 
-  \item \textbf{外表面 Robin 条件的守恒嵌入与物理机制}：
-  在实际物理中，中药材外表面直接暴露于烘房对流循环热风中。对于最外层网格节点 $i=N$（其物理位置严格位于药材几何外表面 $r_N=R$），其代表的外层边界控制微元占据径向半区间 $[r_-, R]$，其中内界面位于半节点位置 $r_- = r_{N-1/2} = R - \Delta r/2$。该表层控制体的几何体积测度（每单位轴向长度与单位角向弧度）通过严格解析积分给出：
-  \begin{equation}
-  \omega_N^r = \int_{r_-}^R r\,dr = \frac{1}{2}(R^2-r_-^2) = \frac{1}{2}\left[R^2 - \left(R-\frac{\Delta r}{2}\right)^2\right] = \frac{1}{2}\left(R\Delta r - \frac{\Delta r^2}{4}\right).\label{eq:omega_N}
-  \end{equation}
-
-  在有限体积法的通量平衡构架下，表层控制微元的时域积分演化完全由流入、流出该微元边界面的净物理通量决定。针对柱坐标几何特征，定义穿过半径为 $r$ 柱面的\textbf{柱面加权物理传递通量（Radial Surface-Weighted Transfer Fluxes）}：
-  \begin{equation}
-  F_T(r,t) \equiv r k(C)\frac{\partial T}{\partial r},\qquad
-  F_C(r,t) \equiv r D(C,T)\frac{\partial C}{\partial r}.
-  \end{equation}
-  在物理含义上，$F_T(r,t)$ 与 $F_C(r,t)$ 乘以 $2\pi L$ 后分别严格等于流经整个圆柱圆周柱面的总传热功率（单位为 $\mathrm{W}$）与总干基水分质量流率（单位为 $\mathrm{kg/s}$）。该表层半微元 $[r_-, R]$ 仅具有两个物理传递边界：
-  \begin{itemize}
-    \item \textbf{内侧传导/扩散界面（$r=r_-$）的内部物理通量}：
-    式\eqref{eq:f_inner_T}与\eqref{eq:f_inner_C}左端的物理量 $F_{N-1/2}^T$ 与 $F_{N-1/2}^C$ 分别明确定义为\textbf{通过内界面 $r_-$ 由药材内部向表层微元供给的柱面加权导热通量与水分扩散通量}。它们直接遵循多孔介质内部的连续物理传递本构方程，采用相邻节点有限差商精确离散表示：
-    \begin{align}
-    F_{N-1/2}^T &= \left.rk\frac{\partial T}{\partial r}\right|_{r_-} \approx r_- k_{N-1/2}\frac{T_N - T_{N-1}}{\Delta r},\label{eq:f_inner_T}\\[4pt]
-    F_{N-1/2}^C &= \left.rD\frac{\partial C}{\partial r}\right|_{r_-} \approx r_- D_{N-1/2}\frac{C_N - C_{N-1}}{\Delta r}.\label{eq:f_inner_C}
-    \end{align}
-    其中界面有效传递系数 $k_{N-1/2}$ 与 $D_{N-1/2}$ 严格取相邻节点 $N-1$ 与 $N$ 的调和平均，准确刻画介质内部的串联传递阻力。
-
-    \item \textbf{外侧对流换热/传质界面（$r=R$）的外部物理通量与连续性}：
-    外表面 $r=R$ 处于固体药材与流体空气的相界面处。根据界面能量守恒与质量守恒原理，界面无几何厚度，因而绝不能凭空蓄积或消耗热量与水分，\textbf{固体内部传导至表面的微元通量必须与流体边界层的外部对流交换通量在界面处严格连续平衡}。
-
-    由表面 Robin 对流换热边界条件式\eqref{eq:robin_t}，药材向外表面的导热通量与流向表面的 Newton 对流换热通量严格平衡：
-    \begin{equation}
-    \left.k\frac{\partial T}{\partial r}\right|_{r=R} = h(T_a-T_N).
-    \end{equation}
-    两端乘以边界半径 $R$，即精确得到\textbf{通过外表面净流入表层微元的柱面加权对流吸热通量} $F_R^T$：
-    \begin{equation}
-    F_R^T \equiv \left.rk\frac{\partial T}{\partial r}\right|_{r=R} = Rh(T_a(t)-T_N).\label{eq:f_outer_T}
-    \end{equation}
-    同理，由表面 Robin 对流传质边界条件式\eqref{eq:robin_m}，药材向表面的水分扩散通量与向环境空气对流蒸发散失的通量严格平衡：
-    \begin{equation}
-    \left.D\frac{\partial C}{\partial r}\right|_{r=R} = h_m(C_a-C_N).
-    \end{equation}
-    两端乘以边界半径 $R$，即精确得到\textbf{通过外表面向外界环境蒸发逸散的柱面加权对流传质通量} $F_R^C$：
-    \begin{equation}
-    F_R^C \equiv \left.rD\frac{\partial C}{\partial r}\right|_{r=R} = Rh_m(C_a(t)-C_N).\label{eq:f_outer_C}
-    \end{equation}
-  \end{itemize}
-
-  \textbf{“守恒嵌入”的本质与严格控制体推导}：
-  在传统有限差分法（FDM）中，处理此类混合 Robin 边界条件时，必须在边界外部人为虚设一层“虚网格点”（Ghost Point）$r_{N+1}=R+\Delta r$，利用虚拟中心差商消元闭合。这不仅破坏了系数矩阵的对称三对角结构，而且容易引入边界外推误差与非物理质量源汇。
-  而在有限体积法中，将控制微分方程 $q\frac{\partial\phi}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right)$ 乘以测度 $r$ 在半控制体 $[r_-, R]$ 上进行严格的空间定积分：
-  \begin{equation}
-  \int_{r_-}^R q\frac{\partial\phi}{\partial t}r\,dr = \int_{r_-}^R \frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right)dr.
-  \end{equation}
-  左端采用微元均值近似，右端利用微积分基本定理化为边界面的物理通量差，导出表层控制微元的通量平衡方程：
-  \begin{align}
-  q_N\omega_N^r\frac{d\phi_N}{dt} &= \left.\left(r\Gamma\frac{\partial\phi}{\partial r}\right)\right|_{R} - \left.\left(r\Gamma\frac{\partial\phi}{\partial r}\right)\right|_{r_-} \notag\\[4pt]
-  &= F_R - F_{N-1/2}.\label{eq:surface_balance}
-  \end{align}
-  此时，\textbf{表面 Robin 条件不是作为额外的代数约束，而是直接作为微元外边界面通量 $F_R$ 的解析物理表达式代入微元守恒平衡式中}！这就是有限体积法特有的“无损守恒嵌入”。
-
-  分别代入热、质系统的物理通量式\eqref{eq:f_inner_T}--\eqref{eq:f_outer_C}，并同除以几何测度 $\omega_N^r = \frac{1}{2}(R^2-r_-^2)$，即可严密推导得出最外层表面节点的常微分演化方程：
-  \begin{align}
-  \frac{dT_N}{dt} &= \frac{2\left[Rh(T_a-T_N) - r_-k_{N-1/2}\dfrac{T_N-T_{N-1}}{\Delta r}\right]}{\rho_Nc_{p,N}(R^2-r_-^2)},\label{eq:surfaceT}\\[10pt]
-  \frac{dC_N}{dt} &= \frac{2\left[Rh_m(C_a-C_N) - r_-D_{N-1/2}\dfrac{C_N-C_{N-1}}{\Delta r}\right]}{R^2-r_-^2}.\label{eq:surfaceC}
-  \end{align}
-  式\eqref{eq:surfaceT}直观表明“外部热风对流吸热通量 $F_R^T$ 减去向内部传导耗散的导热通量 $F_{N-1/2}^T$ 等于表层热量积累”，式\eqref{eq:surfaceC}直观表明“外部干燥空气对流蒸发通量 $F_R^C$（由于 $C_a < C_N$ 而天然为负，表示水分净散失）与内部水分扩散补给通量共同决定表层含水率变化”。整个推导无需虚网格点，形式高度对偶统一，严格遵守界面能量与质量的连续守恒。
-
-  \item \textbf{全局通量守恒性证明与中心零通量约束}：
-  有限体积法区别于传统有限差分法最根本的优越性，在于其能够在空间离散层面无条件维持严格的局部与全局守恒性。以全场总水分存量为例，定义单位长度药材内部的水分总质量为：
-  \begin{equation}
-  M(t) = 2\pi\int_0^R C(r,t)r\,dr.
-  \end{equation}
-  在空间半离散网格上，其对应的离散总存量为全场各控制微元含水率的加权总和：
-  \begin{equation}
-  M_h(t) = 2\pi\sum_{i=0}^N \omega_i^r C_i(t).
-  \end{equation}
-  对全场离散总存量关于时间求导，并将各节点的半离散控制方程组代入：
-  \begin{align}
-  \frac{dM_h}{dt} &= 2\pi\sum_{i=0}^N \omega_i^r\frac{dC_i}{dt} = 2\pi\left(\omega_0^r\frac{dC_0}{dt} + \sum_{i=1}^{N-1}\omega_i^r\frac{dC_i}{dt} + \omega_N^r\frac{dC_N}{dt}\right)\notag\\
-  &= 2\pi\left[(F_{1/2} - F_0) + \sum_{i=1}^{N-1}(F_{i+1/2} - F_{i-1/2}) + (F_R - F_{N-1/2})\right].\label{eq:telescoping_sum}
-  \end{align}
-  观察式\eqref{eq:telescoping_sum}右端的求和结构，其呈现出严格的\textbf{裂项望远镜级数相消（Telescoping Cancellation）}特性：对于任意内部相邻界面 $r_{i+1/2}$，微元 $i$ 向外流出的扩散通量与微元 $i+1$ 向内流入的通量在定义上完全共用同一界面差商，其符号相反、数值完全相等，在全场求和时\textbf{逐对严格相互抵消}。
-
-  更为关键的是，对于药材几何中心边界（$r=0$），传统有限差分法必须借助虚网格点人为施加对称梯度条件 $\left.\frac{\partial\phi}{\partial r}\right|_0=0$；\textbf{而在有限体积法的积分形式下，中心对称轴界面的物理面积度量与柱坐标加权测度严格正比于半径：当 $r\to 0$ 时，界面面积自然收缩至零，使得中心界面通量在数值格式中天然恒等于零：}
-  \begin{equation}
-  F_0 = \lim_{r\to 0} r\Gamma\frac{\partial\phi}{\partial r} \equiv 0.
-  \end{equation}
-  因此，有限体积法\textbf{无需引入任何人工对称边界截断或外推假设，即可天然、无条件地自动满足中心零通量（$F_0=0$）的物理约束}。
-
-  内界面通量相消并结合中心零通量约束后，式\eqref{eq:telescoping_sum}精确退化为：
-  \begin{equation}
-  \frac{dM_h}{dt} = 2\pi F_R^C = 2\pi Rh_m(C_a - C_N) = -2\pi Rh_m(C_N - C_a).\label{eq:global_conservation}
-  \end{equation}
-  该式从数学上严格表明：药材全场总水分的时间衰减率，精确等于外表面逸散至烘房环境的对流传质总通量，介质内部绝无任何由于数值差分近似而引起的虚假质量源或质量漏；当考虑孤立绝热闭合系统（令 $h=0, h_m=0$）时，$F_R\equiv 0$，全场总存量满足 $\frac{dM_h}{dt}\equiv 0$，数值系统在任意空间网格密度与时间尺度下均严格保持总质量守恒。这在理论上完全证明了有限体积法在线方法框架下的无损全局守恒品质。
-\end{enumerate}
-
-\subsection{基于线方法的刚性常微分方程组求解器（自适应 BDF 与稀疏雅可比优化）}
-
-\subsubsection{稀疏雅可比矩阵模式与求解加速}
-在空间半离散化后，偏微分方程组退化为状态向量维度为 $2(N+1)$ 的大型非线性常微分方程组：$\frac{d\mathbf{y}}{dt} = \mathbf{F}(t,\mathbf{y})$。在精细网格划分下，该系统的雅可比矩阵（Jacobian Matrix）$\mathbf{J} = \frac{\partial\mathbf{F}}{\partial\mathbf{y}}$ 维度达到数千阶。若采用无差别的稠密数值求导，每次 Newton 迭代步将需要 $2(N+1)$ 次全场右端项求值，计算开销极其庞大。
-
-观察控制微元物理通量结构可知，温度导数 $\dot{T}_i$ 与水分导数 $\dot{C}_i$ 仅与局部三点空间邻域 $(i-1, i, i+1)$ 的状态量以及物性耦合项直接相关。基于此，本程序严格构建了温度场与水分场双场耦合、三点紧凑空间模板的**稀疏雅可比结构模式（Jacobian Sparsity Pattern）**，以压缩稀疏行（CSR）格式存储：
+\textbf{外表面控制体。}
+记 $r_-=r_{N-1/2}=R-\Delta r/2$，则最外层半控制体的几何权重为
 \begin{equation}
-\mathbf{J}_{\text{sparsity}} = \begin{bmatrix}
-\mathbf{S}_{TT} & \mathbf{S}_{TC} \\[4pt]
-\mathbf{S}_{CT} & \mathbf{S}_{CC}
+\omega_N^r=\int_{r_-}^{R}r\,dr=\frac{R^2-r_-^2}{2}.\label{eq:omega_N}
+\end{equation}
+其内侧扩散通量与外侧 Robin 边界通量分别为
+\begin{align}
+F_{N-1/2}^T &= r_-k_{N-1/2}\frac{T_N-T_{N-1}}{\Delta r},\label{eq:f_inner_T}\\
+F_{N-1/2}^C &= r_-D_{N-1/2}\frac{C_N-C_{N-1}}{\Delta r},\label{eq:f_inner_C}\\
+F_R^T &= Rh\bigl(T_a(t)-T_N\bigr),\label{eq:f_outer_T}\\
+F_R^C &= Rh_m\bigl(C_a(t)-C_N\bigr).\label{eq:f_outer_C}
+\end{align}
+将 Robin 条件直接作为控制体外边界通量代入，无需设置虚网格点。表面节点满足
+\begin{equation}
+q_N\omega_N^r\frac{d\phi_N}{dt}=F_R-F_{N-1/2},\label{eq:surface_balance}
+\end{equation}
+即
+\begin{align}
+\frac{dT_N}{dt}
+&=\frac{2\left[Rh(T_a-T_N)-r_-k_{N-1/2}\dfrac{T_N-T_{N-1}}{\Delta r}\right]}
+{\rho_Nc_{p,N}(R^2-r_-^2)},\label{eq:surfaceT}\\[6pt]
+\frac{dC_N}{dt}
+&=\frac{2\left[Rh_m(C_a-C_N)-r_-D_{N-1/2}\dfrac{C_N-C_{N-1}}{\Delta r}\right]}
+{R^2-r_-^2}.\label{eq:surfaceC}
+\end{align}
+
+\textbf{离散守恒性。}
+定义单位长度圆柱内的离散总水分
+$M_h(t)=2\pi\sum_{i=0}^{N}\omega_i^r C_i(t)$。对各控制体方程求和，有
+\begin{equation}
+\frac{dM_h}{dt}
+=2\pi\left[(F_{1/2}-F_0)+\sum_{i=1}^{N-1}(F_{i+1/2}-F_{i-1/2})
++(F_R-F_{N-1/2})\right].\label{eq:telescoping_sum}
+\end{equation}
+相邻控制体共用同一界面通量，内部项逐项相消；结合 $F_0=0$，得到
+\begin{equation}
+\frac{dM_h}{dt}=2\pi F_R^C
+=2\pi Rh_m(C_a-C_N)
+=-2\pi Rh_m(C_N-C_a).\label{eq:global_conservation}
+\end{equation}
+因此，离散系统的总水分变化仅由表面对流传质决定；当 $h_m=0$ 时，$M_h$ 保持不变。
+
+\subsection{刚性常微分方程组的 BDF 求解}
+
+\subsubsection{求解器选择与稀疏结构}
+空间半离散后，式\eqref{eq:ode_standard}的维数为 $2(N+1)$。扩散系数随温度和含水率变化，使不同空间模态的衰减尺度相差较大，系统具有刚性。本文采用 \texttt{solve\_ivp} 的隐式 BDF 方法进行时间积分；该方法按局部误差自动调整步长与 $1$--$5$ 阶公式，适合长时间扩散过程\cite{hairer}。
+
+由式\eqref{eq:fvm-r}可知，节点 $i$ 的右端项只依赖 $i-1,i,i+1$ 处的温、湿状态，因此雅可比矩阵呈双场耦合的块带状稀疏结构：
+\begin{equation}
+\mathbf{J}=
+\begin{bmatrix}
+\mathbf{J}_{TT}&\mathbf{J}_{TC}\\
+\mathbf{J}_{CT}&\mathbf{J}_{CC}
 \end{bmatrix},
 \end{equation}
-其中每个子块 $\mathbf{S}_{\alpha\beta} \in \mathbb{R}^{(N+1)\times(N+1)}$ 均为严格的三对角稀疏带状结构，全矩阵非零元占比不足 $0.5\%$。将稀疏结构提供给隐式求解器后，算法可利用 Curtis-Powell-Reid 图着色技术，仅需数次扰动求值即可并行确定完整雅可比矩阵，将单步隐式线性化耗时降低了两个数量级。
+其中各子块仅在主对角线及相邻对角线上可能非零。计算时向求解器提供该稀疏模式，以减少数值雅可比估计和隐式线性方程组求解的开销。
 
-\subsubsection{自适应高阶后向差分公式（BDF）积分推进}
-由于干燥过程中材料扩散系数在低含水率区发生急剧的指数衰减，方程刚性比高达 $10^6$ 以上。为此，时间层推进选用国际公认处理超刚性微分方程最稳健的\textbf{隐式多步后向差分方法（BDF / Gear 方法）}\cite{hairer}，调用 SciPy 工业级刚性求解器（\texttt{solve\_ivp}，选用 \texttt{method="BDF"}）驱动执行。
+\subsubsection{误差控制与计算参数}
+BDF 采用分量尺度控制局部误差，数值上要求
+\begin{equation}
+|e_j|\le \mathrm{atol}_j+\mathrm{rtol}\,|y_j|.
+\end{equation}
+本文统一设置 $\mathrm{rtol}=10^{-6}$、$\mathrm{atol}=10^{-8}$，并取最大时间步长
+$\Delta t_{\max}=300\,\mathrm{s}$，以兼顾初期快速变化的分辨率和后期长时间积分的效率。上述参数与空间网格共同接受第七章的网格收敛性和守恒性检验。
 
-该算法具备变步长与自适应变阶（1 至 5 阶）调节机制：
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{自适应误差控制}：在时间积分推进过程中，算法实时评估局部截断误差 $\mathbf{e}^{n+1}$，严格满足预设的相对容差与绝对容差：
-  \begin{equation}
-  \|\mathbf{e}^{n+1}\|_2 \le \text{rtol} \cdot \|\mathbf{y}^{n+1}\|_2 + \text{atol},\qquad \text{rtol} = 1.0\times 10^{-6},\quad \text{atol} = 1.0\times 10^{-8}.
-  \end{equation}
-  \item \textbf{时间步长自适应伸缩}：初始阶梯上升阶段步长自动限制在极小尺度（$\Delta t < 1\text{ s}$）以精准捕捉表面温湿激波；进入烘干中后期平缓阶段后，步长平滑放大至数十秒乃至数百秒（设置上限 $\Delta t_{\max} = 300\text{ s}$），在绝对无条件数值稳定（A-稳定性与 $L$-稳定性）的前提下，实现长达 72 h 物理全过程的高精度、秒级极速推进。
-\end{enumerate}
-
-\subsubsection{连续事件监测、Brent 根查找与安全输出时刻判定}
-对于长周期干燥终点（问题3与问题4），为了兼顾物理严格性与赛题评阅规范，程序构建了\textbf{“连续理论临界时刻 + 60 s 输出网格安全达标时刻”}的双重判定体系：
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{连续终止事件与 Brent 算法精确反解}：
-  定义全域最大含水率达标事件函数：$g(t) = \max_{0\le i\le N} C_i(t) - 0.15$。在 BDF 求解器内部注册零点检测回调函数（\texttt{events}）。当积分轨道穿过阈值时，求解器借助高阶多项式连续密集解（\texttt{dense\_output}），调用高精度\textbf{Brent 根查找算法（\texttt{scipy.optimize.brentq}）}，结合双曲正割与反向二次插值，在微秒级时间内精确定位出连续物理时间意义上的严格达标时刻 $t_d$。
-  \item \textbf{60 s 输出网格首个严格达标时刻（安全达标点）}：
-  根据竞赛规范，结果必须以 60 s 间隔在 Excel 表格中呈现。由于浮点舍入，在临界点附近的数值若直接截断显示四位小数可能出现边界模糊。因此，程序在 60 s 整数网格点上严格检验首个满足原始未经舍入最大值 $\max C < 0.15$ 的时刻作为“安全输出达标时刻”（Safe Output Time），确保评委在打开 Excel 检查时全场所有位置均确凿无误地达标。
-\end{enumerate}
-
-统一求解程序的总体算法执行流程如图\ref{fig:flowchart}所示；核心求解器 Python 实现的关键代码如代码清单\ref{code:solver}所示。
+\subsubsection{终止事件与输出时刻}
+问题3、4要求全域含水率均低于 $0.15$。定义事件函数
+\begin{equation}
+g(t)=\max_{0\le i\le N}C_i(t)-0.15.
+\end{equation}
+积分过程中监测 $g(t)$ 的过零，并利用求解器的连续插值定位理论达标时刻 $t_d$。提交结果需按 $60\,\mathrm{s}$ 间隔输出，因此另在整数分钟网格上检查未经舍入的 $\max_i C_i$，将首个满足 $\max_iC_i<0.15$ 的时刻记为安全输出时刻 $t_{\mathrm{safe}}$。数值求解流程概括如图\ref{fig:flowchart}所示。
 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    auto,
     font=\small,
-    card_init/.style={
-        rectangle, rounded corners=3.5pt,
-        minimum width=5.0cm, minimum height=0.72cm,
-        align=center,
-        draw=blue!65!black, fill=blue!5,
-        thick,
-        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
+    box/.style={
+        rectangle, rounded corners=3pt,
+        minimum width=6.0cm, minimum height=0.58cm,
+        align=center, draw=blue!60!black, fill=blue!4, thick
     },
-    card_proc/.style={
-        rectangle, rounded corners=3.5pt,
-        minimum width=5.0cm, minimum height=0.72cm,
-        align=center,
-        draw=black!55, fill=black!2.5,
-        thick,
-        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
-    },
-    card_solver/.style={
-        rectangle, rounded corners=3.5pt,
-        minimum width=5.0cm, minimum height=0.72cm,
-        align=center,
-        draw=blue!70!black, fill=blue!4,
-        thick,
-        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
-    },
-    card_dec/.style={
-        diamond, aspect=2.3,
-        minimum width=3.6cm, minimum height=0.85cm,
-        align=center,
-        draw=orange!80!black, fill=orange!8,
-        thick,
-        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
-    },
-    card_event/.style={
-        rectangle, rounded corners=3.5pt,
-        minimum width=4.2cm, minimum height=0.72cm,
-        align=center,
-        draw=teal!70!black, fill=teal!5,
-        thick,
-        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
-    },
-    card_out/.style={
-        rectangle, rounded corners=3.5pt,
-        minimum width=5.0cm, minimum height=0.72cm,
-        align=center,
-        draw=blue!70!black, fill=blue!8,
-        thick,
-        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
-    },
-    arrow/.style={
-        -{Stealth[length=2.4mm, width=1.6mm]},
-        thick, color=black!75
-    }
+    arrow/.style={-{Stealth[length=2.2mm]}, thick, color=black!70}
 ]
-
-% 主干中轴节点
-\node (init) [card_init] {\textbf{参数输入与网格划分}\\[1.5pt]\footnotesize\color{black!75} $T^0, C^0$, 边界 $(T_a, C_a)$, 半径 $R(t)$};
-\node (fvm) [card_proc, below=0.52cm of init] {\textbf{FVM 空间半离散化}\\[1.5pt]\footnotesize\color{black!75} 控制体通量平衡，组装 RHS $\mathbf{F}(t,\mathbf{y})$};
-\node (sparse) [card_proc, below=0.52cm of fvm] {\textbf{双场稀疏雅可比构建}\\[1.5pt]\footnotesize\color{black!75} 三点紧凑模板 $\mathbf{J}_{\text{sparse}}$ (CSR 格式)};
-\node (bdf) [card_solver, below=0.52cm of sparse] {\textbf{自适应 BDF 刚性推进}\\[1.5pt]\footnotesize\color{black!75} 变步长变阶积分与局部误差控制};
-\node (check) [card_dec, below=0.65cm of bdf] {\textbf{全场达标?}\\[1pt]\footnotesize\color{black!75} $\max C_i \le 0.15$};
-
-% 右侧事件反解分支
-\node (brent) [card_event, right=1.6cm of check] {\textbf{Brent 算法精确定位}\\[1.5pt]\footnotesize\color{black!75} 连续理论临界时刻 $t_d$};
-\node (safe) [card_event, below=0.75cm of brent] {\textbf{60\,s 网格安全判定}\\[1.5pt]\footnotesize\color{black!75} 锁定未舍入 $\max C < 0.15$ 时刻 $t_{\text{safe}}$};
-
-% 汇合底部输出节点
-\node (end) [card_out, below=2.3cm of check] {\textbf{成果输出与图表生成}\\[1.5pt]\footnotesize\color{black!75} 空间投影采样、Excel 报表与时空图};
-
-% 连线绘制
-\draw [arrow] (init) -- (fvm);
-\draw [arrow] (fvm) -- (sparse);
-\draw [arrow] (sparse) -- (bdf);
-\draw [arrow] (bdf) -- (check);
-
-\draw [arrow] (check.east) -- node[above=2pt, font=\footnotesize] {是} (brent.west);
-\draw [arrow] (brent) -- (safe);
-\draw [arrow] (safe.south) |- (end.east);
-
-\draw [arrow] (check.south) -- node[left=2pt, font=\footnotesize] {否} (end.north);
-
+\node (init) [box] {参数输入与径向网格划分};
+\node (fvm) [box, below=0.32cm of init] {FVM 空间半离散，组装 $\mathbf{F}(t,\mathbf{y})$};
+\node (bdf) [box, below=0.32cm of fvm] {BDF 自适应积分（稀疏雅可比与误差控制）};
+\node (event) [box, below=0.32cm of bdf] {监测 $g(t)$，确定 $t_d$ 与 $t_{\mathrm{safe}}$};
+\node (out) [box, below=0.32cm of event] {空间采样与结果输出};
+\draw [arrow] (init)--(fvm);
+\draw [arrow] (fvm)--(bdf);
+\draw [arrow] (bdf)--(event);
+\draw [arrow] (event)--(out);
 \end{tikzpicture}
-\caption{基于线方法 FVM 空间半离散与稀疏雅可比自适应 BDF 的统一数值求解流程}\label{fig:flowchart}
+\caption{FVM--BDF 数值求解流程}\label{fig:flowchart}
 \end{figure}
-
-\begin{lstlisting}[caption={支撑材料核心求解器稀疏雅可比构建与自适应 BDF 求解实现代码片段}, label={code:solver}]
-def coupled_jacobian_sparsity(node_count: int):
-    """构建温度/水分双场耦合、三点空间模板的稀疏雅可比结构模式 (CSR 格式)"""
-    pattern = lil_matrix((2 * node_count, 2 * node_count), dtype=int)
-    for eq_field in range(2):
-        for var_field in range(2):
-            row_off, col_off = eq_field * node_count, var_field * node_count
-            for i in range(node_count):
-                for j in range(max(0, i - 1), min(node_count, i + 2)):
-                    pattern[row_off + i, col_off + j] = 1
-    return pattern.tocsr()
-
-def solve_fixed(name, end_s, node_count, model, environment, track_dry_event=False):
-    grid, rhs = make_fixed_rhs(INITIAL_RADIUS_M, node_count, model, environment)
-    y0 = np.concatenate((np.full(node_count, INITIAL_T_K), np.full(node_count, INITIAL_C)))
-    events = dry_event(node_count) if track_dry_event else None
-    solution = solve_ivp(
-        rhs, (0.0, end_s), y0,
-        method="BDF", rtol=1.0e-6, atol=1.0e-8,
-        max_step=300.0, dense_output=True, events=events,
-        jac_sparsity=coupled_jacobian_sparsity(node_count),
-    )
-    return Simulation(name=name, grid=grid, solution=solution)
-\end{lstlisting}
-
 \subsection{移动边界收缩域的相对坐标变换（统一化格式）}
 
 \subsubsection{移动边界物理难题与 Landau 归一化映射}
