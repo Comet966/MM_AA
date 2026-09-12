@@ -185,9 +185,9 @@ z = z.
 将传热通量矢量 $\mathbf{A}=k\nabla T$ 与传质通量矢量 $\mathbf{A}=D\nabla C$ 在柱坐标下的正交分量分别代入上述散度展开式中：
 \begin{align}
 \nabla\cdot(k\nabla T) &= \frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right) + \frac1r\frac{\partial}{\partial\theta}\left(\frac{k}{r}\frac{\partial T}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right)\notag\\
-&= \frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right) + \frac{1}{r^2}\frac{\partial}{\partial\theta}\left(k\frac{\partial T}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right),\\
+&= \frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right) + \frac{1}{r^2}\frac{\partial}{\partial\theta}\left(k\frac{\partial T}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right),\label{eq:div_heat_cyl}\\[10pt]
 \nabla\cdot(D\nabla C) &= \frac1r\frac{\partial}{\partial r}\left(rD\frac{\partial C}{\partial r}\right) + \frac1r\frac{\partial}{\partial\theta}\left(\frac{D}{r}\frac{\partial C}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right)\notag\\
-&= \frac1r\frac{\partial}{\partial r}\left(rD\frac{\partial C}{\partial r}\right) + \frac{1}{r^2}\frac{\partial}{\partial\theta}\left(D\frac{\partial C}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).
+&= \frac1r\frac{\partial}{\partial r}\left(rD\frac{\partial C}{\partial r}\right) + \frac{1}{r^2}\frac{\partial}{\partial\theta}\left(D\frac{\partial C}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).\label{eq:div_mass_cyl}
 \end{align}
 由此推导并在推导之后给出柱坐标系下的三维具体展开形式：
 \begin{align}
