@@ -350,11 +350,18 @@ r_{i+1/2} = \frac{r_i+r_{i+1}}{2},\qquad r_{-1/2} = 0,\qquad r_{N+1/2} = R.
 对应控制微元的物理体积为 $\Delta V_i = 2\pi L \omega_i^r$。该权重系数直接由坐标区间的定积分自然得出，而非人为预设。
 
 \subsubsection{控制体通量平衡与内部节点方程}
-将一维柱坐标径向扩散控制方程写为通式：
+\textbf{为了得到对热传导与水分扩散皆高度普适与泛用的统一数值计算方法，本研究引入广义守恒变量进行换元统一表征}：设广义未知状态场标量为 $\phi$、广义容量系数为 $q$、广义扩散传递系数为 $\Gamma$。通过换元，将传热控制方程\eqref{eq:heat}与传质控制方程\eqref{eq:mass}完全统一为如下通式：
 \begin{equation}
-q\frac{\partial\phi}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right),
+q\frac{\partial\phi}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right),\label{eq:generic_pde}
 \end{equation}
-其中温度场对应 $(\phi, q, \Gamma) = (T, \rho c_p, k)$，水分场对应 $(\phi, q, \Gamma) = (C, 1, D)$。将该式乘以 $2\pi r L$ 后在控制体单元 $[r_{i-1/2}, r_{i+1/2}]$ 上积分，左侧时间导数项以节点中心值代表控制微元均值，右侧导数积分转化为界面通量之差：
+其中具体换元对应关系严格定义如下：
+\begin{itemize}
+  \item \textbf{热传导系统换元映射}：令 $(\phi, q, \Gamma) = (T, \rho c_p, k)$，其中未知标量 $\phi$ 代表温度 $T$，容量系数 $q$ 代表容积热容 $\rho c_p$，扩散系数 $\Gamma$ 代表导热系数 $k$；
+  \item \textbf{水分扩散系统换元映射}：令 $(\phi, q, \Gamma) = (C, 1, D)$，其中未知标量 $\phi$ 代表干基含水率 $C$，容量系数 $q \equiv 1$ 代表单位质量基准，扩散系数 $\Gamma$ 代表有效扩散系数 $D$。
+\end{itemize}
+\textbf{通过上述换元映射，热场与湿场的空间有限体积离散推导、代数矩阵组装与时间步进求解器完全并轨统一，不仅算法推导紧凑，而且代码层面一套求解内核即可双向通用复用。}
+
+将式\eqref{eq:generic_pde}乘以 $2\pi r L$ 后在控制体单元 $[r_{i-1/2}, r_{i+1/2}]$ 上进行定积分，左侧时间导数项以节点中心值代表控制微元均值，右侧导数积分转化为界面通量之差：
 \begin{equation}
 q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\right|_{r_{i-1/2}}^{r_{i+1/2}} = r_{i+1/2}\Gamma_{i+1/2}\left.\frac{\partial\phi}{\partial r}\right|_{r_{i+1/2}} - r_{i-1/2}\Gamma_{i-1/2}\left.\frac{\partial\phi}{\partial r}\right|_{r_{i-1/2}}.
 \end{equation}
