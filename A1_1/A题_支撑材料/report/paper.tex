@@ -88,10 +88,9 @@ $t_d$ & 全场含水率达到阈值的时间 & h\\
 \end{table}
 
 \section{模型建立}
-\subsection{固定半径热质耦合控制方程的物理推导与建立}
 药材热风烘干过程本质上是热量由烘房热风向药材内部传导、水分由药材内部向表面迁移蒸发的耦合非定常传递过程，二者均严格遵循“微元内物理量的时间积累率等于各边界面通量的净流入率”之守恒原理。
 
-\subsubsection{直角坐标系下的守恒定律与本构方程}
+\subsection{直角坐标系下的守恒定律与本构方程}
 药材内部的热量传递与水分迁移具有高度的物理对偶性与数学对称性，二者均由梯度驱动的通量本构关系和微元守恒原理共同确定。
 
 首先，在通量本构层面，各向同性介质内的热流密度矢量 $\mathbf{q}$ 与水分扩散通量矢量 $\mathbf{J}$ 分别服从 Fourier 导热定律与 Fick 扩散第一定律：
@@ -125,7 +124,7 @@ $t_d$ & 全场含水率达到阈值的时间 & h\\
 +\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).\label{eq:cartesian_mass}
 \end{align}
 
-\subsubsection{直角坐标系到柱坐标系的变换推导与控制方程建立}
+\subsection{直角坐标系到柱坐标系的变换推导与控制方程建立}
 由于中药材外观呈规则圆柱体形态，在直角坐标系下边界几何曲面（$x^2+y^2=R^2$）描述较为繁琐，且难以直接施加表面径向对流与扩散边界条件。因此，必须将式\eqref{eq:cartesian_heat}、\eqref{eq:cartesian_mass}所示的控制方程由直角坐标系 $(x,y,z)$ 变换至正交柱坐标系 $(r,\theta,z)$。
 
 直角坐标与柱坐标之间的正变换与逆变换关系为：
@@ -201,7 +200,7 @@ z = z.
 +\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).\label{eq:cyl_mass}
 \end{align}
 
-\subsubsection{柱坐标扩散方程的简化}
+\subsection{柱坐标扩散方程的简化}
 式\eqref{eq:cyl_heat}与式\eqref{eq:cyl_mass}给出了完整的三维柱坐标热质耦合偏微分方程。为提高数值求解效率并抓住主导物理过程，结合烘干实验工况与药材几何参数，需要对三维方程进行降维简化。支撑该简化的一系列几何与物理证据分条陈列如下：
 \begin{enumerate}[label=(\arabic*)]
   \item \textbf{周向均匀性与旋转对称性证据}：
@@ -251,7 +250,7 @@ z = z.
 &=\frac1r\frac{\partial}{\partial r}\left(rD(C,T)\frac{\partial C}{\partial r}\right).\label{eq:mass}
 \end{align}
 
-\subsubsection{边界条件}
+\subsection{边界条件}
 为了使上述一维径向偏微分方程组构成数学上适定且物理闭合的初边值问题，须在空间内部中心与外部表面施加对应的边界定解条件：
 \begin{enumerate}[label=(\arabic*)]
   \item \textbf{圆柱中心对称条件与奇点处理}：
@@ -283,6 +282,7 @@ z = z.
 \end{equation}
 针对具体求解，将式\eqref{eq:coupled_system}分别与各问对应附录中的物性参数联立即可：问题1联立附录2对应物性，问题2与问题3联立附录3对应物性，问题4则结合附录4对应物性与后述时变移动边界模型求解。
 
+\section{数值计算与问题解答}
 \subsection{问题4的相对坐标模型}
 定义
 \[
@@ -426,7 +426,6 @@ g(t)=\max_i C_i(t)-0.15
 \]
 首次由正变为非正作为停止事件，并在相邻时间层间线性插值确定 $t_d$。采用最大值而不是平均值或表面值，才能保证“药材各处”均达标。
 
-\section{问题解答}
 \subsection{问题1：前30分钟的温湿分布}
 图\ref{fig:profiles}左列给出典型径向剖面。热量由表面输入，故表面升温快于中心；水分先从外层逸出，形成明显低含水率边界层。1800 s时中心温度33.5753 $^\circ$C、表面温度36.7856 $^\circ$C；中心含水率仍为2.5500 kg/kg，表面降至1.5102 kg/kg。温度没有超过同期环境，含水率没有出现负值或反向增湿。
 \begin{figure}[H]
