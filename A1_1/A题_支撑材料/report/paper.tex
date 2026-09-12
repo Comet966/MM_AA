@@ -223,15 +223,29 @@ z = z.
 \end{enumerate}
 
 \paragraph{本小节小结}
-综合上述四条物理与几何证据，可得出明确结论：
-第一，由圆柱周向旋转对称性可知，对周向角 $\theta$ 的一阶与二阶偏导数严格为零（$\frac{\partial T}{\partial\theta}=0, \frac{\partial C}{\partial\theta}=0$），控制方程中的角向导数项完全消除；
-第二，由大长径比、大侧面积比及特征时间尺度的鲜明对比可知，药材主体绝大部分区域内的轴向温度与水分梯度远小于径向梯度（$\left|\frac{\partial T}{\partial z}\right|\ll\left|\frac{\partial T}{\partial r}\right|$ 且 $\left|\frac{\partial C}{\partial z}\right|\ll\left|\frac{\partial C}{\partial r}\right|$），轴向梯度可合理近似为零（$\frac{\partial}{\partial z}\approx0$），轴向二阶传导与扩散项 $\frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right)$ 和 $\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right)$ 可以安全忽略；
-第三，由 Biot 数判据明确证实，内部径向传递阻力不可忽略，径向梯度始终主导着整个非定常干燥进程。
+综合上述四条物理与几何证据，可以确立三维柱坐标传递方程降维至一维径向模型的关键梯度判定准则，将其单列如下：
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{周向旋转对称性严格消除角向导数}：
+  \begin{equation}
+  \frac{\partial T}{\partial\theta} = 0,\qquad \frac{\partial C}{\partial\theta} = 0.\label{eq:theta_zero}
+  \end{equation}
+  \item \textbf{大长径比与大面积比消除轴向导数}：
+  \begin{equation}
+  \left|\frac{\partial T}{\partial z}\right|\ll\left|\frac{\partial T}{\partial r}\right| \implies \frac{\partial T}{\partial z} \approx 0,\qquad
+  \left|\frac{\partial C}{\partial z}\right|\ll\left|\frac{\partial C}{\partial r}\right| \implies \frac{\partial C}{\partial z} \approx 0.\label{eq:z_zero}
+  \end{equation}
+  \item \textbf{Biot数准则证实径向梯度持续显著}：
+  \begin{equation}
+  Bi_T > 0.1 \implies \frac{\partial T}{\partial r} \neq 0,\qquad
+  Bi_m \gg 0.1 \implies \frac{\partial C}{\partial r} \neq 0.\label{eq:r_nonzero}
+  \end{equation}
+\end{enumerate}
+由此可知：由式\eqref{eq:theta_zero}，控制方程中的周向导数项 $\frac{\partial}{\partial\theta}(\dots)$ 严格消失；由式\eqref{eq:z_zero}，轴向二阶传导与扩散项 $\frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right)$ 和 $\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right)$ 可以安全忽略；由式\eqref{eq:r_nonzero}，径向梯度始终主导着整个非定常烘干进程，必须完整保留分布参数形式。
 
-因此，三维柱坐标偏微分方程组\eqref{eq:cyl_heat}与\eqref{eq:cyl_mass}严格退化为一维径向非线性热质耦合偏微分方程组。问题1--3在固定物理半径 $0\le r\le R$ 上满足：
+综上推导与判据，三维柱坐标控制方程\eqref{eq:cyl_heat}与\eqref{eq:cyl_mass}严格退化为一维径向非线性热质耦合偏微分方程组。问题1--3在固定物理半径 $0\le r\le R$ 上满足：
 \begin{align}
 \rho(C)c_p(C)\frac{\partial T}{\partial t}
-&=\frac1r\frac{\partial}{\partial r}\left(rk(C)\frac{\partial T}{\partial r}\right),\label{eq:heat}\\
+&=\frac1r\frac{\partial}{\partial r}\left(rk(C)\frac{\partial T}{\partial r}\right),\label{eq:heat}\\[10pt]
 \frac{\partial C}{\partial t}
 &=\frac1r\frac{\partial}{\partial r}\left(rD(C,T)\frac{\partial C}{\partial r}\right).\label{eq:mass}
 \end{align}
