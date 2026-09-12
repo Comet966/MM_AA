@@ -201,13 +201,23 @@ z = z.
 +\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).\label{eq:cyl_mass}
 \end{align}
 
-进一步结合烘干实验工况与药材几何参数，进行合理降维与物理简化：
+\subsubsection{柱坐标扩散方程的简化}
+式\eqref{eq:cyl_heat}与式\eqref{eq:cyl_mass}给出了完整的三维柱坐标热质耦合偏微分方程。为提高数值求解效率并抓住主导物理过程，结合烘干实验工况与药材几何参数，将三维控制方程简化为一维径向方程。支撑该降维简化的物理与几何证据分条陈列如下：
 \begin{enumerate}[label=(\arabic*)]
-  \item \textbf{圆周轴对称性}：药材圆柱关于中心轴呈几何对称，且烘房内热风均匀掠过圆柱周向外表面，因此温度场和水分场与周向角 $\theta$ 无关，即 $\frac{\partial T}{\partial\theta}=0$、$\frac{\partial C}{\partial\theta}=0$，角向导数项严格为零。
-  \item \textbf{忽略轴向扩散}：药材长度 $L=25\text{ cm}$，初始半径 $R_0=2\text{ cm}$，长径比 $L/(2R_0)=6.25\gg1$。内部传递距离以径向为主（热量由外周传入 $2\text{ cm}$，水分由内向外周析出 $2\text{ cm}$），两端端部效应仅局限在微小近端区域，圆柱主体内部轴向梯度远小于径向梯度（$\left|\frac{\partial T}{\partial z}\right|\ll\left|\frac{\partial T}{\partial r}\right|$，$\left|\frac{\partial C}{\partial z}\right|\ll\left|\frac{\partial C}{\partial r}\right|$），故轴向扩散项 $\frac{\partial}{\partial z}\approx0$ 可合理忽略。
+  \item \textbf{周向均匀性与旋转对称性证据}：
+  药材外观呈规则圆柱体，关于中心旋转轴具备严格的几何旋转对称性。烘房内热风流动平稳且均匀掠过圆柱周向外表面，环境温度 $T_a(t)$、环境水分浓度 $C_a(t)$ 以及表面对流换热与传质系数 $h, h_m$ 均不依赖于周向角 $\theta$。同时，烘干初始时刻药材内部温度（$28^\circ\text{C}$）与含水率（$2.55\text{ kg/kg}$）在全截面上均匀分布，不存在周向驱动力或扰动。因此，温度场和水分场满足周向各向同性，即 $\frac{\partial T}{\partial\theta}=0$、$\frac{\partial C}{\partial\theta}=0$，角向一阶与二阶导数项严格为零。
+
+  \item \textbf{大长径比与大面积比几何证据}：
+  药材实测几何尺寸为长度 $L=25\text{ cm}$，初始半径 $R_0=2\text{ cm}$（直径 $2R_0=4\text{ cm}$），长径比为 $L/(2R_0)=6.25\gg1$。圆柱周向侧面积为 $A_{\text{side}}=2\pi R_0 L=100\pi\text{ cm}^2$，而两端截面积之和仅为 $2A_{\text{end}}=2\pi R_0^2=8\pi\text{ cm}^2$。侧面积与端面积之比高达 $A_{\text{side}}/(2A_{\text{end}})=L/R_0=12.5$，这意味着超过 $92.6\%$ 的热量吸收与水分蒸发均由周向侧表面承担，两端面通量占比极低，端部效应仅局限在两端极小的局部区域。
+
+  \item \textbf{特征传递尺度与时间尺度证据}：
+  热量由外周传入中心、水分由中心析出至外表面的径向特征尺度仅为半径 $R_0=2\text{ cm}$；而沿轴向自两端向中心传递的特征距离为半长 $L/2=12.5\text{ cm}$。由非定常扩散的特征时间尺度准则 $\tau \sim l^2/D_{\text{eff}}$ 可知，轴向传递特征时间与径向传递特征时间之比为 $\tau_z/\tau_r \approx (L/2R_0)^2 = 6.25^2 \approx 39$ 倍。这表明径向传递的动态响应速度远高于轴向，整个烘干过程中径向热质扩散占据绝对主导地位。
+
+  \item \textbf{传递梯度对比证据}：
+  在上述大长径比、大面积比及扩散时间尺度的共同作用下，药材主体绝大部分区域内的轴向温度梯度与水分梯度远小于径向梯度，即 $\left|\frac{\partial T}{\partial z}\right|\ll\left|\frac{\partial T}{\partial r}\right|$ 且 $\left|\frac{\partial C}{\partial z}\right|\ll\left|\frac{\partial C}{\partial r}\right|$，轴向扩散项 $\frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right)\approx0$ 与 $\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right)\approx0$ 可以合理忽略。
 \end{enumerate}
 
-最终，在柱坐标变换与几何降维的推导之后，导出固定物理半径下具体柱坐标控制偏微分方程的一维径向展开形式。问题1--3在固定物理半径 $0\le r\le R$ 上满足：
+综上推导与多重证据支撑，三维柱坐标控制方程\eqref{eq:cyl_heat}与\eqref{eq:cyl_mass}退化为一维径向非线性热质耦合偏微分方程组。问题1--3在固定物理半径 $0\le r\le R$ 上满足：
 \begin{align}
 \rho(C)c_p(C)\frac{\partial T}{\partial t}
 &=\frac1r\frac{\partial}{\partial r}\left(rk(C)\frac{\partial T}{\partial r}\right),\label{eq:heat}\\
