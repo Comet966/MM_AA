@@ -377,23 +377,65 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
 \subsubsection{边界节点离散、奇点消除与守恒性证明}
 \begin{enumerate}[label=(\arabic*)]
   \item \textbf{圆心节点奇点自然规避}：
-  圆心节点 $i=0$ 对应积分区间 $[0, \Delta r/2]$。左侧界面恰好位于中心对称轴 $r_{-1/2}=0$ 处，其界面面积与界面通量恒等于零：$F_{-1/2}=r_{-1/2}\Gamma_{-1/2}\left.\frac{\partial\phi}{\partial r}\right|_0 \equiv 0$。由式\eqref{eq:fvm-r}取有限体积守恒极限，得到中心节点的常微分方程：
-  \begin{equation}
-  \frac{dT_0}{dt} = \frac{4k_{1/2}}{\rho_0c_{p,0}}\frac{T_1-T_0}{\Delta r^2},\qquad
-  \frac{dC_0}{dt} = 4D_{1/2}\frac{C_1-C_0}{\Delta r^2}.
-  \end{equation}
-  该半离散格式在数值离散层面天然消除了 $1/r$ 奇异项，完全避免了在 $r=0$ 处进行奇异项数值计算。
+  圆心节点 $i=0$ 对应围绕中心轴的柱形控制体，其物理积分区间为 $[0, \Delta r/2]$。左侧边界恰好处于中心对称轴 $r_{-1/2}=0$ 处，其界面几何面积度量为零，界面通量恒为零：$F_{-1/2} = \left.r\Gamma\frac{\partial\phi}{\partial r}\right|_0 \equiv 0$。该控制微元的几何权重通过积分求得：$\omega_0^r = \int_0^{\Delta r/2} r\,dr = \frac{\Delta r^2}{8}$。右侧外界面通量为 $F_{1/2} = r_{1/2}\Gamma_{1/2}\left.\frac{\partial\phi}{\partial r}\right|_{r_{1/2}} \approx \frac{\Delta r}{2}\Gamma_{1/2}\frac{\phi_1-\phi_0}{\Delta r} = \frac{1}{2}\Gamma_{1/2}(\phi_1-\phi_0)$。代入微元通量平衡方程 $q_0\omega_0^r\frac{d\phi_0}{dt} = F_{1/2} - F_{-1/2}$，两端同除以 $q_0\omega_0^r = q_0\frac{\Delta r^2}{8}$，可导出广义标量在圆心节点的演化方程 $\frac{d\phi_0}{dt} = \frac{4\Gamma_{1/2}}{q_0\Delta r^2}(\phi_1-\phi_0)$。分别代入热、质系统换元映射，得到纵向排列的圆心节点常微分方程组：
+  \begin{align}
+  \frac{dT_0}{dt} &= \frac{4k_{1/2}}{\rho_0c_{p,0}}\frac{T_1-T_0}{\Delta r^2},\label{eq:center_T}\\[8pt]
+  \frac{dC_0}{dt} &= 4D_{1/2}\frac{C_1-C_0}{\Delta r^2}.\label{eq:center_C}
+  \end{align}
+  该半离散格式在数值离散层面天然消除了柱坐标系中的 $1/r$ 奇异项，完全避免了在 $r=0$ 处发生除零发散的数值奇异性。
 
   \item \textbf{外表面 Robin 条件的守恒嵌入}：
-  最外层节点 $i=N$ 对应控制区间 $[r_-, R]$（其中 $r_- = R - \Delta r/2$）。外表面 $r=R$ 处的界面通量由 Newton 换热与表面传质边界直接代入，建立微元通量平衡：
+  最外层节点 $i=N$ 对应药材物理外表面（$r_N=R$），其控制微元占据径向区间 $[r_-, R]$，其中内界面位置为半节点 $r_- = r_{N-1/2} = R - \Delta r/2$。该表层控制体的几何权重通过解析积分确定：
+  \begin{equation}
+  \omega_N^r = \int_{r_-}^R r\,dr = \frac{1}{2}(R^2-r_-^2) = \frac{1}{2}\left[R^2 - \left(R-\frac{\Delta r}{2}\right)^2\right] = \frac{1}{2}\left(R\Delta r - \frac{\Delta r^2}{4}\right).
+  \end{equation}
+  在有限体积法的通量平衡框架下，外表面 Robin 条件并非作为人工差分方程附加，而是作为最外层控制微元外边界面的**自然物理通量（Natural Physical Flux）**直接嵌入平衡方程中。该表层微元包含两个物理通量界面：
+  \begin{itemize}
+    \item \textbf{内侧传导/扩散界面（$r=r_-$）}：与相邻节点 $i=N-1$ 的微元通过介质内传导与扩散相连，界面通量遵循介质内部本构关系：
+    \begin{equation}
+    F_{N-1/2}^{\text{heat}} = \left.rk\frac{\partial T}{\partial r}\right|_{r_-} \approx r_- k_{N-1/2}\frac{T_N - T_{N-1}}{\Delta r},\qquad
+    F_{N-1/2}^{\text{mass}} = \left.rD\frac{\partial C}{\partial r}\right|_{r_-} \approx r_- D_{N-1/2}\frac{C_N - C_{N-1}}{\Delta r}.
+    \end{equation}
+    \item \textbf{外侧对流换热/传质界面（$r=R$）}：直接暴露于烘房环境空气中。由界面无质量与无能量积累的物理连续性原理，药材内部传递至表面的通量必须与外部对流交换通量严格平衡。由表面 Robin 边界条件：
+    \begin{align}
+    -k\left.\frac{\partial T}{\partial r}\right|_{r=R} &= h(T_N-T_a) \implies F_R^{\text{heat}} = \left.rk\frac{\partial T}{\partial r}\right|_{r=R} = Rh(T_a-T_N),\\
+    -D\left.\frac{\partial C}{\partial r}\right|_{r=R} &= h_m(C_N-C_a) \implies F_R^{\text{mass}} = \left.rD\frac{\partial C}{\partial r}\right|_{r=R} = -Rh_m(C_N-C_a).
+    \end{align}
+  \end{itemize}
+  将内、外界面通量代入表层控制微元的通量守恒方程 $q_N\omega_N^r\frac{d\phi_N}{dt} = F_R - F_{N-1/2}$，即得到外表面节点的完整半离散演化方程：
   \begin{align}
-  \frac{dT_N}{dt} &= \frac{2\left[Rh(T_a-T_N) - r_-k_{N-1/2}\dfrac{T_N-T_{N-1}}{\Delta r}\right]}{\rho_Nc_{p,N}(R^2-r_-^2)},\label{eq:surfaceT}\\[8pt]
+  \frac{dT_N}{dt} &= \frac{2\left[Rh(T_a-T_N) - r_-k_{N-1/2}\dfrac{T_N-T_{N-1}}{\Delta r}\right]}{\rho_Nc_{p,N}(R^2-r_-^2)},\label{eq:surfaceT}\\[10pt]
   \frac{dC_N}{dt} &= \frac{2\left[-Rh_m(C_N-C_a) - r_-D_{N-1/2}\dfrac{C_N-C_{N-1}}{\Delta r}\right]}{R^2-r_-^2}.\label{eq:surfaceC}
   \end{align}
-  式\eqref{eq:surfaceT}表明“外部输入的对流换热量减去向内部传递的导热通量等于表层蓄热”，式\eqref{eq:surfaceC}表明“内部扩散供给表层的水分减去表面蒸发带走的水分等于表层含水率变化”。
+  上述嵌入过程完全无需像传统有限差分法那样引入虚拟外部网格点（Ghost Points），物理意义极为严密透明：式\eqref{eq:surfaceT}直观反映“外界对流吸热通量与向内部导热耗散通量的净差等于表层温度积累”，式\eqref{eq:surfaceC}直观反映“内部水分扩散补给通量与表面对流蒸发散失通量的净差决定表层含水率下降率”。
 
-  \item \textbf{全局通量守恒性证明}：
-  在空间任意内部界面 $r_{i+1/2}$ 处，自节点 $i$ 流出的通量与流入节点 $i+1$ 的通量大小相等、方向相反。当对全场所有控制微元的常微分方程乘以体积权重求和时，所有内界面通量逐项完全抵消，全场总热量与总水分的变化率严格等于外部边界的净通量输入。这证明了有限体积法在空间半离散层面具备严格的局部与全局守恒性。
+  \item \textbf{全局通量守恒性证明与中心零通量约束}：
+  有限体积法区别于传统有限差分法最根本的优越性，在于其能够在空间离散层面无条件维持严格的局部与全局守恒性。以全场总水分存量为例，定义单位长度药材内部的水分总质量为：
+  \begin{equation}
+  M(t) = 2\pi\int_0^R C(r,t)r\,dr.
+  \end{equation}
+  在空间半离散网格上，其对应的离散总存量为全场各控制微元含水率的加权总和：
+  \begin{equation}
+  M_h(t) = 2\pi\sum_{i=0}^N \omega_i^r C_i(t).
+  \end{equation}
+  对全场离散总存量关于时间求导，并将各节点的半离散控制方程组代入：
+  \begin{align}
+  \frac{dM_h}{dt} &= 2\pi\sum_{i=0}^N \omega_i^r\frac{dC_i}{dt} = 2\pi\left(\omega_0^r\frac{dC_0}{dt} + \sum_{i=1}^{N-1}\omega_i^r\frac{dC_i}{dt} + \omega_N^r\frac{dC_N}{dt}\right)\notag\\
+  &= 2\pi\left[(F_{1/2} - F_0) + \sum_{i=1}^{N-1}(F_{i+1/2} - F_{i-1/2}) + (F_R - F_{N-1/2})\right].\label{eq:telescoping_sum}
+  \end{align}
+  观察式\eqref{eq:telescoping_sum}右端的求和结构，其呈现出严格的**裂项望远镜级数相消（Telescoping Cancellation）**特性：对于任意内部相邻界面 $r_{i+1/2}$，微元 $i$ 向外流出的扩散通量与微元 $i+1$ 向内流入的通量在定义上完全共用同一界面差商，其符号相反、数值完全相等，在全场求和时**逐对严格相互抵消**。
+
+  更为关键的是，对于药材几何中心边界（$r=0$），传统有限差分法必须借助虚网格点人为施加对称梯度条件 $\left.\frac{\partial\phi}{\partial r}\right|_0=0$；**而在有限体积法的积分形式下，中心对称轴界面的物理面积度量与柱坐标加权测度严格正比于半径：当 $r\to 0$ 时，界面面积自然收缩至零，使得中心界面通量在数值格式中天然恒等于零：**
+  \begin{equation}
+  F_0 = \lim_{r\to 0} r\Gamma\frac{\partial\phi}{\partial r} \equiv 0.
+  \end{equation}
+  因此，有限体积法**无需引入任何人工对称边界截断或外推假设，即可天然、无条件地自动满足中心零通量（$F_0=0$）的物理约束**。
+
+  内界面通量相消并结合中心零通量约束后，式\eqref{eq:telescoping_sum}精确退化为：
+  \begin{equation}
+  \frac{dM_h}{dt} = 2\pi F_R = -2\pi Rh_m(C_N - C_a).
+  \end{equation}
+  该式从数学上严格表明：药材全场总水分的时间衰减率，精确等于外表面逸散至烘房环境的对流传质总通量，介质内部绝无任何由于数值差分近似而引起的虚假质量源或质量漏；当考虑孤立绝热闭合系统（令 $h=0, h_m=0$）时，$F_R\equiv 0$，全场总存量满足 $\frac{dM_h}{dt}\equiv 0$，数值系统在任意空间网格密度与时间尺度下均严格保持总质量守恒。这在理论上完全证明了有限体积法在线方法框架下的无损全局守恒品质。
 \end{enumerate}
 
 \subsection{刚性常微分方程组求解器（BDF推进与Picard迭代）}
