@@ -481,13 +481,26 @@ z = z.
 \paragraph{总结}
 综合简化后的扩散方程与边界定解条件，问题1--3在 $0\le r\le R$ 下构成的热质耦合方程组可统一表示为：
 \begin{equation}
-\begin{cases}
-\rho(C)c_p(C)\dfrac{\partial T}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rk(C)\dfrac{\partial T}{\partial r}\right),\\[12pt]
-\dfrac{\partial C}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rD(C,T)\dfrac{\partial C}{\partial r}\right),\\[12pt]
-\left.\dfrac{\partial T}{\partial r}\right|_{r=0} = 0,\quad \left.\dfrac{\partial C}{\partial r}\right|_{r=0} = 0,\\[12pt]
--k(C_s)\left.\dfrac{\partial T}{\partial r}\right|_{r=R} = h\left[T(R,t)-T_a(t)\right],\\[12pt]
--D(C_s,T_s)\left.\dfrac{\partial C}{\partial r}\right|_{r=R} = h_m\left[C(R,t)-C_a(t)\right].
-\end{cases}\label{eq:coupled_system}
+\left\{
+\begin{array}{@{}l@{\quad}l@{}}
+\text{传热方程：} &
+\displaystyle \rho(C)c_p(C)\frac{\partial T}{\partial t}
+=\frac{1}{r}\frac{\partial}{\partial r}\left(rk(C)\frac{\partial T}{\partial r}\right),\\[12pt]
+\text{传质方程：} &
+\displaystyle \frac{\partial C}{\partial t}
+=\frac{1}{r}\frac{\partial}{\partial r}\left(rD(C,T)\frac{\partial C}{\partial r}\right),\\[12pt]
+\text{中心对称条件：} &
+\displaystyle \left.\frac{\partial T}{\partial r}\right|_{r=0}
+=\left.\frac{\partial C}{\partial r}\right|_{r=0}=0,\\[12pt]
+\text{表面对流换热：} &
+\displaystyle -k(C_s)\left.\frac{\partial T}{\partial r}\right|_{r=R}
+=h\left[T(R,t)-T_a(t)\right],\\[12pt]
+\text{表面对流传质：} &
+\displaystyle -D(C_s,T_s)\left.\frac{\partial C}{\partial r}\right|_{r=R}
+=h_m\left[C(R,t)-C_a(t)\right].
+\end{array}
+\right.\label{eq:coupled_system}
+\raisetag{1.5\baselineskip}
 \end{equation}
 针对具体求解，将式\eqref{eq:coupled_system}分别与各问对应附录中的物性参数联立即可。
 
@@ -509,61 +522,76 @@ D_1(C)&=7.0\times10^{-9}\exp\!\left(-\frac{0.89}{C}\right)\ \mathrm{m^2/s}.
 将上述物性参数及附件1给出的烘房环境边界代入第五章建立的一维径向模型，得到问题1的完整初边值问题：
 \begin{equation}
 \left\{
-\begin{aligned}
-\rho_1c_{p1}\frac{\partial T}{\partial t}
-&=\frac{1}{r}\frac{\partial}{\partial r}\!\left(rk_1\frac{\partial T}{\partial r}\right),\\
-\frac{\partial C}{\partial t}
-&=\frac{1}{r}\frac{\partial}{\partial r}\!\left(rD_1(C)\frac{\partial C}{\partial r}\right),\\
-\left.\frac{\partial T}{\partial r}\right|_{r=0}
-&=\left.\frac{\partial C}{\partial r}\right|_{r=0}=0,\\
--k_1\left.\frac{\partial T}{\partial r}\right|_{r=R}
-&=h[T(R,t)-T_a(t)],\\
--D_1(C_s)\left.\frac{\partial C}{\partial r}\right|_{r=R}
-&=h_m[C(R,t)-C_a(t)],\\
-T(r,0)&=301.15\ \mathrm{K},\qquad C(r,0)=2.55,
-\end{aligned}
+\begin{array}{@{}l@{\quad}l@{}}
+\text{传热方程：} &
+\displaystyle \rho_1c_{p1}\frac{\partial T}{\partial t}
+=\frac{1}{r}\frac{\partial}{\partial r}\!\left(rk_1\frac{\partial T}{\partial r}\right),\\[12pt]
+\text{传质方程：} &
+\displaystyle \frac{\partial C}{\partial t}
+=\frac{1}{r}\frac{\partial}{\partial r}\!\left(rD_1(C)\frac{\partial C}{\partial r}\right),\\[12pt]
+\text{中心对称条件：} &
+\displaystyle \left.\frac{\partial T}{\partial r}\right|_{r=0}
+=\left.\frac{\partial C}{\partial r}\right|_{r=0}=0,\\[12pt]
+\text{表面对流换热：} &
+\displaystyle -k_1\left.\frac{\partial T}{\partial r}\right|_{r=R}
+=h[T(R,t)-T_a(t)],\\[12pt]
+\text{表面对流传质：} &
+\displaystyle -D_1(C_s)\left.\frac{\partial C}{\partial r}\right|_{r=R}
+=h_m[C(R,t)-C_a(t)],\\[12pt]
+\text{初始条件：} &
+\displaystyle T(r,0)=301.15\ \mathrm{K},\qquad C(r,0)=2.55.
+\end{array}
 \right.\label{eq:q1_system}
+\raisetag{1.5\baselineskip}
 \end{equation}
 其中 $h=25\ \mathrm{W/(m^2\cdot K)}$，$h_m=8.0\times10^{-7}\ \mathrm{m/s}$。由于温度方程中不含 $C$，水分方程中的 $D_1$ 也不依赖 $T$，故问题1的温度场和水分场解耦，可在同一数值框架下分别推进。
 
 \subsubsection{模型求解}
-首先对附件1给出的离散环境数据作分段线性插值，构造连续边界函数 $T_a(t)$ 和 $C_a(t)$，并将温度统一换算为绝对温度。随后仅对径向空间变量作有限体积离散，以保持热量和水分通量的离散守恒性。将区间 $[0,R]$ 均分为 $N=160$ 段，设置161个径向节点
+附件1只给出了若干时刻的烘房环境数据。首先采用分段线性插值得到连续的边界函数 $T_a(t)$ 和 $C_a(t)$，并将环境温度换算为绝对温度。
+
+随后使用有限体积法离散径向空间。将药材半径均分为160段，共设置161个径向节点：
 \begin{equation}
 r_i=i\Delta r,\qquad \Delta r=\frac{R}{N}=1.25\times10^{-4}\ \mathrm m
 =0.0125\ \mathrm{cm},\qquad i=0,1,\ldots,N.
 \end{equation}
-令 $(\phi,q,\Gamma)=(T,\rho_1c_{p1},k_1)$ 或 $(C,1,D_1)$，对第 $i$ 个环形控制体积分，内部节点的半离散方程为
+
+为了用同一形式表示温度场和水分场，记
+\begin{equation}
+(\phi,q,\Gamma)=
+\begin{cases}
+(T,\rho_1c_{p1},k_1), & \text{温度场},\\
+(C,1,D_1(C)), & \text{水分场}.
+\end{cases}
+\end{equation}
+对每个环形控制体作通量平衡，内部节点的离散方程可写为
 \begin{equation}
 q_i\omega_i^r\frac{d\phi_i}{dt}=F_{i+1/2}-F_{i-1/2},\qquad
 F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}
 \frac{\phi_{i+1}-\phi_i}{\Delta r},\label{eq:fvm-r}
 \end{equation}
-其中 $\omega_i^r=(r_{i+1/2}^2-r_{i-1/2}^2)/2$ 为控制体几何权重，并在圆心和表面分别取 $r_{-1/2}=0$、$r_{N+1/2}=R$。界面系数采用调和平均
-$\Gamma_{i+1/2}=2\Gamma_i\Gamma_{i+1}/(\Gamma_i+\Gamma_{i+1})$
-\cite{patankar}，以保证相邻控制体界面通量连续。圆心对称条件对应零通量，外表面 Robin 条件写成
+其中，控制体的几何权重和界面传递系数分别为
+\begin{equation}
+\omega_i^r=\frac{r_{i+1/2}^2-r_{i-1/2}^2}{2},\qquad
+\Gamma_{i+1/2}=\frac{2\Gamma_i\Gamma_{i+1}}{\Gamma_i+\Gamma_{i+1}}.
+\end{equation}
+界面系数采用调和平均\cite{patankar}。圆心处取零通量，药材表面的对流边界则写成
 \begin{equation}
 F_R^T=Rh(T_a-T_N),\qquad F_R^C=Rh_m(C_a-C_N).
 \end{equation}
-定义单位轴向长度截面内的含水率加权积分 $I_C=2\pi\sum_i\omega_i^rC_i$，内部界面通量逐项相消后有
-\begin{equation}
-\frac{dI_C}{dt}=2\pi F_R^C=-2\pi Rh_m(C_N-C_a),
-\label{eq:global_conservation}
-\end{equation}
-表明离散系统中水分的变化仅由表面对流传质通量引起。
+相邻控制体共用同一个界面通量，因此内部通量会成对抵消，药材整体的热量和水分变化均由表面对流边界决定。
 
-将各节点温度与含水率依次排列为状态向量，空间离散后的偏微分方程组即转化为常微分方程初值问题
+完成空间离散后，将各节点的温度和含水率组成状态向量：
 \begin{equation}
 \mathbf y=[T_0,\ldots,T_N,C_0,\ldots,C_N]^T,\qquad
 \frac{d\mathbf y}{dt}=\mathbf F(t,\mathbf y),\quad \mathbf y(0)=\mathbf y_0.
 \label{eq:ode_standard}
 \end{equation}
-由于热传导和水分扩散对应的特征时间尺度相差较大，离散系统具有刚性，故采用隐式后向差分公式（BDF）积分。其 $k$ 阶格式可写为
+至此，原偏微分方程组转化为常微分方程组。考虑到温度和水分的变化速度相差较大，采用适合刚性问题的后向差分公式（BDF）推进时间。其计算格式为
 \begin{equation}
 \sum_{j=0}^{k}\alpha_j\mathbf y_{n+1-j}
 =\Delta t_n\beta\,\mathbf F(t_{n+1},\mathbf y_{n+1}),\qquad 1\le k\le5,
 \end{equation}
-每一步通过 Newton 迭代求解，并按局部误差自适应调整步长与阶次
-\cite{hairer}。计算中相对误差限和绝对误差限分别设为 $10^{-6}$ 与 $10^{-8}$，最大内部步长设为 $300\,\mathrm s$，并利用块带状雅可比稀疏结构加速求解。求得连续时间数值解后，每隔 $1\,\mathrm s$ 提取一次结果，并按 $0.1\,\mathrm{cm}$ 的径向间隔写入 \texttt{result1.xlsx}。求解流程如图\ref{fig:flowchart}所示。
+求解器会根据局部误差自动调整步长和阶次\cite{hairer}。计算时将相对误差限和绝对误差限分别设为 $10^{-6}$ 和 $10^{-8}$，最大内部步长设为 $300\,\mathrm s$。求得连续时间数值解后，每隔 $1\,\mathrm s$、每隔 $0.1\,\mathrm{cm}$ 提取一次结果并写入 \texttt{result1.xlsx}。整体求解流程如图\ref{fig:flowchart}所示。
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
