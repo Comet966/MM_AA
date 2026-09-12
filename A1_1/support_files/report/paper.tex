@@ -408,17 +408,17 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
     \item \textbf{外侧对流换热/传质界面（$r=R$）的外部物理通量与连续性}：
     外表面 $r=R$ 处于固体药材与流体空气的相界面处。根据界面能量守恒与质量守恒原理，界面无几何厚度，因而绝不能凭空蓄积或消耗热量与水分，\textbf{固体内部传导至表面的微元通量必须与流体边界层的外部对流交换通量在界面处严格连续平衡}。
 
-    由表面 Robin 对流换热边界条件式\eqref{eq:robin_t}，介质向外传导的热流密度 $-k\left.\frac{\partial T}{\partial r}\right|_{r=R}$ 严格等于外部流体流向表面的 Newton 冷却对流换热通量 $h(T_a - T_N)$：
+    由表面 Robin 对流换热边界条件式\eqref{eq:robin_t}，药材向外表面的导热通量与流向表面的 Newton 对流换热通量严格平衡：
     \begin{equation}
-    -k\left.\frac{\partial T}{\partial r}\right|_{r=R} = h(T_N-T_a) \iff \left.k\frac{\partial T}{\partial r}\right|_{r=R} = h(T_a-T_N).
+    \left.k\frac{\partial T}{\partial r}\right|_{r=R} = h(T_a-T_N).
     \end{equation}
     两端乘以边界半径 $R$，即精确得到\textbf{通过外表面净流入表层微元的柱面加权对流吸热通量} $F_R^T$：
     \begin{equation}
     F_R^T \equiv \left.rk\frac{\partial T}{\partial r}\right|_{r=R} = Rh(T_a(t)-T_N).\label{eq:f_outer_T}
     \end{equation}
-    同理，由表面 Robin 对流传质边界条件式\eqref{eq:robin_m}，介质向外扩散的水分流密度 $-D\left.\frac{\partial C}{\partial r}\right|_{r=R}$ 严格等于向外部干燥空气蒸发逸散的水分蒸发通量 $h_m(C_N-C_a)$：
+    同理，由表面 Robin 对流传质边界条件式\eqref{eq:robin_m}，药材向表面的水分扩散通量与向环境空气对流蒸发散失的通量严格平衡：
     \begin{equation}
-    -D\left.\frac{\partial C}{\partial r}\right|_{r=R} = h_m(C_N-C_a) \iff \left.D\frac{\partial C}{\partial r}\right|_{r=R} = -h_m(C_N-C_a).
+    \left.D\frac{\partial C}{\partial r}\right|_{r=R} = -h_m(C_N-C_a).
     \end{equation}
     两端乘以边界半径 $R$，即精确得到\textbf{通过外表面向外界环境蒸发逸散的柱面加权对流传质通量} $F_R^C$：
     \begin{equation}
