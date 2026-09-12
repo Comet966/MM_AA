@@ -142,20 +142,46 @@ r = \sqrt{x^2+y^2},\\[4pt]
 z = z.
 \end{cases}
 \end{equation}
-根据多元微积分复合函数的链式求导法则，空间一阶偏导数算子的对应变换关系为：
+根据多元微积分复合函数的链式求导法则，空间一阶偏导数算子与柱坐标偏导数算子的对应变换关系可紧凑地表示为矩阵形式：
+\begin{equation}
+\begin{bmatrix}
+\dfrac{\partial}{\partial x} \\[10pt]
+\dfrac{\partial}{\partial y} \\[10pt]
+\dfrac{\partial}{\partial z}
+\end{bmatrix}
+=
+\begin{bmatrix}
+\dfrac{\partial r}{\partial x} & \dfrac{\partial\theta}{\partial x} & 0 \\[10pt]
+\dfrac{\partial r}{\partial y} & \dfrac{\partial\theta}{\partial y} & 0 \\[10pt]
+0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+\dfrac{\partial}{\partial r} \\[10pt]
+\dfrac{\partial}{\partial\theta} \\[10pt]
+\dfrac{\partial}{\partial z}
+\end{bmatrix}
+=
+\begin{bmatrix}
+\cos\theta & -\dfrac{\sin\theta}{r} & 0 \\[10pt]
+\sin\theta & \dfrac{\cos\theta}{r} & 0 \\[10pt]
+0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+\dfrac{\partial}{\partial r} \\[10pt]
+\dfrac{\partial}{\partial\theta} \\[10pt]
+\dfrac{\partial}{\partial z}
+\end{bmatrix}.\label{eq:jacobi_transform}
+\end{equation}
+微元线元弧长平方 $ds^2=dx^2+dy^2+dz^2=dr^2+r^2d\theta^2+dz^2$，给出柱坐标系下的三个正交 Lamé 尺度因子分别为 $h_r=1, h_\theta=r, h_z=1$。据此，柱坐标正交基底 $(\mathbf{e}_r,\mathbf{e}_\theta,\mathbf{e}_z)$ 下的梯度算子 $\nabla$ 表示为：
 \begin{align}
-\frac{\partial}{\partial x} &= \frac{\partial r}{\partial x}\frac{\partial}{\partial r} + \frac{\partial\theta}{\partial x}\frac{\partial}{\partial\theta} = \cos\theta\frac{\partial}{\partial r} - \frac{\sin\theta}{r}\frac{\partial}{\partial\theta},\\
-\frac{\partial}{\partial y} &= \frac{\partial r}{\partial y}\frac{\partial}{\partial r} + \frac{\partial\theta}{\partial y}\frac{\partial}{\partial\theta} = \sin\theta\frac{\partial}{\partial r} + \frac{\cos\theta}{r}\frac{\partial}{\partial\theta},\\
-\frac{\partial}{\partial z} &= \frac{\partial}{\partial z}.
+\nabla &= \frac{1}{h_r}\frac{\partial}{\partial r}\mathbf{e}_r + \frac{1}{h_\theta}\frac{\partial}{\partial\theta}\mathbf{e}_\theta + \frac{1}{h_z}\frac{\partial}{\partial z}\mathbf{e}_z \notag\\
+&= \mathbf{e}_r\frac{\partial}{\partial r} + \mathbf{e}_\theta\frac1r\frac{\partial}{\partial\theta} + \mathbf{e}_z\frac{\partial}{\partial z}.\label{eq:grad_cyl}
 \end{align}
-微元线元弧长平方 $ds^2=dx^2+dy^2+dz^2=dr^2+r^2d\theta^2+dz^2$，给出柱坐标系下的三个正交 Lamé 尺度因子分别为 $h_r=1, h_\theta=r, h_z=1$。据此，标量场 $\phi$ 的梯度矢量在柱坐标正交基底 $(\mathbf{e}_r,\mathbf{e}_\theta,\mathbf{e}_z)$ 下表示为：
-\begin{equation}
-\nabla\phi = \frac{1}{h_r}\frac{\partial\phi}{\partial r}\mathbf{e}_r + \frac{1}{h_\theta}\frac{\partial\phi}{\partial\theta}\mathbf{e}_\theta + \frac{1}{h_z}\frac{\partial\phi}{\partial z}\mathbf{e}_z = \mathbf{e}_r\frac{\partial\phi}{\partial r} + \mathbf{e}_\theta\frac1r\frac{\partial\phi}{\partial\theta} + \mathbf{e}_z\frac{\partial\phi}{\partial z}.
-\end{equation}
 对于任意矢量场 $\mathbf{A}=A_r\mathbf{e}_r+A_\theta\mathbf{e}_\theta+A_z\mathbf{e}_z$，由正交曲线坐标系下的散度算子公式：
-\begin{equation}
-\nabla\cdot\mathbf{A} = \frac{1}{h_rh_\theta h_z}\left[\frac{\partial}{\partial r}(h_\theta h_zA_r) + \frac{\partial}{\partial\theta}(h_rh_zA_\theta) + \frac{\partial}{\partial z}(h_rh_\theta A_z)\right] = \frac1r\frac{\partial}{\partial r}(rA_r) + \frac1r\frac{\partial A_\theta}{\partial\theta} + \frac{\partial A_z}{\partial z}.
-\end{equation}
+\begin{align}
+\nabla\cdot\mathbf{A} &= \frac{1}{h_rh_\theta h_z}\left[\frac{\partial}{\partial r}(h_\theta h_zA_r) + \frac{\partial}{\partial\theta}(h_rh_zA_\theta) + \frac{\partial}{\partial z}(h_rh_\theta A_z)\right] \notag\\
+&= \frac1r\frac{\partial}{\partial r}(rA_r) + \frac1r\frac{\partial A_\theta}{\partial\theta} + \frac{\partial A_z}{\partial z}.\label{eq:div_cyl}
+\end{align}
 将传热通量矢量 $\mathbf{A}=k\nabla T$ 与传质通量矢量 $\mathbf{A}=D\nabla C$ 在柱坐标下的正交分量分别代入上述散度展开式中：
 \begin{align}
 \nabla\cdot(k\nabla T) &= \frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right) + \frac1r\frac{\partial}{\partial\theta}\left(\frac{k}{r}\frac{\partial T}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right)\notag\\
