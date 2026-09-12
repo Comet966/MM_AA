@@ -428,10 +428,15 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
 
   \textbf{“守恒嵌入”的本质与严格控制体推导}：
   在传统有限差分法（FDM）中，处理此类混合 Robin 边界条件时，必须在边界外部人为虚设一层“虚网格点”（Ghost Point）$r_{N+1}=R+\Delta r$，利用虚拟中心差商消元闭合。这不仅破坏了系数矩阵的对称三对角结构，而且容易引入边界外推误差与非物理质量源汇。
-  而在有限体积法中，将控制微元方程 $q\frac{\partial\phi}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right)$ 乘以测度 $r$ 在半控制体 $[r_-, R]$ 上进行严格的空间定积分：
+  而在有限体积法中，将控制微分方程 $q\frac{\partial\phi}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right)$ 乘以测度 $r$ 在半控制体 $[r_-, R]$ 上进行严格的空间定积分：
   \begin{equation}
-  \int_{r_-}^R q\frac{\partial\phi}{\partial t}r\,dr = \int_{r_-}^R \frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right)dr \implies q_N\omega_N^r\frac{d\phi_N}{dt} = \left.\left(r\Gamma\frac{\partial\phi}{\partial r}\right)\right|_{R} - \left.\left(r\Gamma\frac{\partial\phi}{\partial r}\right)\right|_{r_-} = F_R - F_{N-1/2}.
+  \int_{r_-}^R q\frac{\partial\phi}{\partial t}r\,dr = \int_{r_-}^R \frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right)dr.
   \end{equation}
+  左端采用微元均值近似，右端利用微积分基本定理化为边界面的物理通量差，导出表层控制微元的通量平衡方程：
+  \begin{align}
+  q_N\omega_N^r\frac{d\phi_N}{dt} &= \left.\left(r\Gamma\frac{\partial\phi}{\partial r}\right)\right|_{R} - \left.\left(r\Gamma\frac{\partial\phi}{\partial r}\right)\right|_{r_-} \notag\\[4pt]
+  &= F_R - F_{N-1/2}.\label{eq:surface_balance}
+  \end{align}
   此时，\textbf{表面 Robin 条件不是作为额外的代数约束，而是直接作为微元外边界面通量 $F_R$ 的解析物理表达式代入微元守恒平衡式中}！这就是有限体积法特有的“无损守恒嵌入”。
 
   分别代入热、质系统的物理通量式\eqref{eq:f_inner_T}--\eqref{eq:f_outer_C}，并同除以几何测度 $\omega_N^r = \frac{1}{2}(R^2-r_-^2)$，即可严密推导得出最外层表面节点的常微分演化方程：
