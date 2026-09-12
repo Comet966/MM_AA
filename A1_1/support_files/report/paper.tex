@@ -35,9 +35,8 @@
 \setlist{nosep,leftmargin=2em}
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{2026年高教社杯全国大学生数学建模竞赛}
-\rhead{A题：药材的烘干问题}
 \cfoot{\thepage}
+\renewcommand{\headrulewidth}{0pt}
 \input{generated_results.tex}
 
 \title{\vspace{-2.2em}\bfseries 基于热质耦合与移动边界的药材烘干模型}
@@ -325,11 +324,15 @@ z = z.
 \section{数值计算与问题解答}
 
 \subsection{基于有限体积法的空间半离散化（线方法）}
-求解非定常热质扩散偏微分方程组的标准现代数值方法是**空间半离散化（Spatial Semi-Discretization）**，在数学与计算力学中通常称为**线方法（Method of Lines, MOL）**。其核心思想是：首先仅在空间坐标上进行网格划分，利用守恒型有限体积法（Finite Volume Method, FVM）完成空间导数的离散，而保留时间导数的连续性，从而将关于连续时空的偏微分方程（PDE）系统转化为高维关于时间演化的常微分方程组（ODE System）：
+求解非定常热质扩散偏微分方程组的标准现代数值方法是**空间半离散化（Spatial Semi-Discretization）**，在数学与计算力学中通常称为**线方法（Method of Lines, MOL）**。其核心思想是：首先仅在空间坐标上进行网格划分，利用守恒型有限体积法（Finite Volume Method, FVM）完成空间导数的离散，而保留时间导数的连续性，从而将关于连续时空的偏微分方程（PDE）系统转化为标准的一阶常微分方程组初值问题（ODE System）：
 \begin{equation}
-\mathbf{M}\frac{d\boldsymbol{\Phi}}{dt} = \mathbf{A}(\boldsymbol{\Phi})\boldsymbol{\Phi} + \mathbf{b}(t),
+\frac{d\mathbf{y}}{dt} = \mathbf{F}(t,\mathbf{y}),\qquad \mathbf{y}(t_0) = \mathbf{y}_0,\label{eq:ode_standard}
 \end{equation}
-随后便可选用成熟高效的常微分方程数值推进格式对时间层进行步进求解。
+其中状态向量 $\mathbf{y}(t)$ 将全场各个空间离散节点上的温度与干基含水率状态量拼接组合：
+\begin{equation}
+\mathbf{y}(t) = \left[T_0(t), T_1(t), \ldots, T_N(t), C_0(t), C_1(t), \ldots, C_N(t)\right]^T,
+\end{equation}
+右端向量函数 $\mathbf{F}(t,\mathbf{y})$（即数值算法中给出各变量瞬时导数 $\dot{\mathbf{y}}$ 的右端项 RHS）由空间有限体积通量平衡闭合导出。完成空间半离散后，偏微分方程的求解完全转化为标准的常微分方程初值问题，随后即可选用成熟高效的 ODE 求解器对时间层进行步进求解。
 
 \subsubsection{径向网格剖分与控制体几何权重}
 对于问题1--3所在的固定物理圆柱域 $0\le r\le R$，将物理半径等距划分为 $N$ 个空间区间：
