@@ -324,146 +324,89 @@ z = z.
 \section{数值计算与问题解答}
 
 \subsection{基于有限体积法的空间半离散化（线方法）}
-采用线方法仅对空间变量作有限体积离散，保留时间导数连续。由各控制体的热、质通量平衡，可将耦合 PDE 化为初值问题
+采用线方法仅离散空间变量，将温度与含水率节点值组成
 \begin{equation}
-\frac{d\mathbf{y}}{dt}=\mathbf{F}(t,\mathbf{y}),\qquad
-\mathbf{y}=\left[T_0,\ldots,T_N,C_0,\ldots,C_N\right]^T,\qquad
-\mathbf{y}(t_0)=\mathbf{y}_0,\label{eq:ode_standard}
+\mathbf{y}=[T_0,\ldots,T_N,C_0,\ldots,C_N]^T,\qquad
+\frac{d\mathbf{y}}{dt}=\mathbf{F}(t,\mathbf{y}),\label{eq:ode_standard}
 \end{equation}
-其中 $\mathbf{F}$ 由下述离散通量统一组装。
+其中 $\mathbf{F}$ 由控制体通量平衡组装。
 
-\subsubsection{径向网格剖分与控制体几何权重}
-对固定圆柱域 $0\le r\le R$ 作等距剖分：
-\begin{equation}
-r_i=i\Delta r,\quad \Delta r=\frac{R}{N},\quad
-r_{i+1/2}=\frac{r_i+r_{i+1}}{2},\quad
-r_{-1/2}=0,\quad r_{N+1/2}=R.
-\end{equation}
-节点 $i$ 所代表控制体的径向权重和体积分别为
-\begin{equation}
-\omega_i^r=\int_{r_{i-1/2}}^{r_{i+1/2}}r\,dr
-=\frac{r_{i+1/2}^2-r_{i-1/2}^2}{2},\qquad
-\Delta V_i=2\pi L\omega_i^r.
-\end{equation}
-
-\subsubsection{控制体通量平衡与内部节点方程}
-令 $(\phi,q,\Gamma)=(T,\rho c_p,k)$ 表示传热过程，或令 $(\phi,q,\Gamma)=(C,1,D)$ 表示传质过程，则式\eqref{eq:heat}和式\eqref{eq:mass}可统一写为
-\begin{equation}
-q\frac{\partial\phi}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right),\label{eq:generic_pde}
-\end{equation}
-对第 $i$ 个控制体积分，并以中心差商近似界面梯度，得到内部节点 $i=1,\ldots,N-1$ 的半离散方程
+令 $(\phi,q,\Gamma)=(T,\rho c_p,k)$ 或 $(C,1,D)$。在等距网格
+$r_i=i\Delta r$（$\Delta r=R/N$）上，控制体权重为
+$\omega_i^r=(r_{i+1/2}^2-r_{i-1/2}^2)/2$。内部节点的有限体积格式为
 \begin{equation}
 \frac{d\phi_i}{dt}=\frac{F_{i+1/2}-F_{i-1/2}}{q_i\omega_i^r},\qquad
-F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}\frac{\phi_{i+1}-\phi_i}{\Delta r},\label{eq:fvm-r}
+F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}\frac{\phi_{i+1}-\phi_i}{\Delta r}.\label{eq:fvm-r}
 \end{equation}
-其中界面系数采用调和平均，以处理相邻控制体间的串联传递阻力\cite{patankar}：
+调和平均用于表征相邻控制体间的串联传递阻力\cite{patankar}：
 \begin{equation}
-\Gamma_{i+1/2} = \frac{2\Gamma_i\Gamma_{i+1}}{\Gamma_i+\Gamma_{i+1}}.
+\Gamma_{i+1/2}=\frac{2\Gamma_i\Gamma_{i+1}}{\Gamma_i+\Gamma_{i+1}}.\label{eq:harmonic_mean}
 \end{equation}
 
-\subsubsection{边界节点离散与守恒性}
-\textbf{圆心控制体。}
-圆心处柱面面积随 $r\to0$ 自然趋于零，故 $F_0=0$，不存在 $1/r$ 的数值奇点。由
-$\omega_0^r=\int_0^{\Delta r/2}r\,dr=\Delta r^2/8$ 可得
+圆心处柱面面积为零，故 $F_0=0$；Robin 条件则直接作为最外层控制体的边界通量。记
+$r_-=R-\Delta r/2$、$\omega_N^r=(R^2-r_-^2)/2$，边界格式统一为
 \begin{align}
-\frac{dT_0}{dt} &= \frac{4k_{1/2}}{\rho_0c_{p,0}}\frac{T_1-T_0}{\Delta r^2},\label{eq:center_T}\\[4pt]
-\frac{dC_0}{dt} &= 4D_{1/2}\frac{C_1-C_0}{\Delta r^2}.\label{eq:center_C}
+\frac{d\phi_0}{dt}&=\frac{4\Gamma_{1/2}}{q_0\Delta r^2}(\phi_1-\phi_0),\notag\\
+F_{N-1/2}&=r_-\Gamma_{N-1/2}\frac{\phi_N-\phi_{N-1}}{\Delta r},\qquad
+q_N\omega_N^r\frac{d\phi_N}{dt}=F_R-F_{N-1/2},\notag\\
+F_R^T&=Rh(T_a-T_N),\qquad F_R^C=Rh_m(C_a-C_N).\notag
 \end{align}
-
-\textbf{外表面控制体。}
-记 $r_-=r_{N-1/2}=R-\Delta r/2$，则最外层半控制体的几何权重为
-\begin{equation}
-\omega_N^r=\int_{r_-}^{R}r\,dr=\frac{R^2-r_-^2}{2}.\label{eq:omega_N}
-\end{equation}
-其内侧扩散通量与外侧 Robin 边界通量分别为
-\begin{align}
-F_{N-1/2}^T &= r_-k_{N-1/2}\frac{T_N-T_{N-1}}{\Delta r},\label{eq:f_inner_T}\\
-F_{N-1/2}^C &= r_-D_{N-1/2}\frac{C_N-C_{N-1}}{\Delta r},\label{eq:f_inner_C}\\
-F_R^T &= Rh\bigl(T_a(t)-T_N\bigr),\label{eq:f_outer_T}\\
-F_R^C &= Rh_m\bigl(C_a(t)-C_N\bigr).\label{eq:f_outer_C}
-\end{align}
-将 Robin 条件直接作为控制体外边界通量代入，无需设置虚网格点。表面节点满足
-\begin{equation}
-q_N\omega_N^r\frac{d\phi_N}{dt}=F_R-F_{N-1/2},\label{eq:surface_balance}
-\end{equation}
-即
-\begin{align}
-\frac{dT_N}{dt}
-&=\frac{2\left[Rh(T_a-T_N)-r_-k_{N-1/2}\dfrac{T_N-T_{N-1}}{\Delta r}\right]}
-{\rho_Nc_{p,N}(R^2-r_-^2)},\label{eq:surfaceT}\\[6pt]
-\frac{dC_N}{dt}
-&=\frac{2\left[Rh_m(C_a-C_N)-r_-D_{N-1/2}\dfrac{C_N-C_{N-1}}{\Delta r}\right]}
-{R^2-r_-^2}.\label{eq:surfaceC}
-\end{align}
-
-\textbf{离散守恒性。}
-定义单位长度圆柱内的离散总水分
-$M_h(t)=2\pi\sum_{i=0}^{N}\omega_i^r C_i(t)$。对各控制体方程求和，有
-\begin{equation}
-\frac{dM_h}{dt}
-=2\pi\left[(F_{1/2}-F_0)+\sum_{i=1}^{N-1}(F_{i+1/2}-F_{i-1/2})
-+(F_R-F_{N-1/2})\right].\label{eq:telescoping_sum}
-\end{equation}
-相邻控制体共用同一界面通量，内部项逐项相消；结合 $F_0=0$，得到
+该处理无需虚网格点。内部界面通量求和后逐项相消，因此
+$M_h=2\pi\sum_{i=0}^N\omega_i^rC_i$ 满足
 \begin{equation}
 \frac{dM_h}{dt}=2\pi F_R^C
-=2\pi Rh_m(C_a-C_N)
-=-2\pi Rh_m(C_N-C_a).\label{eq:global_conservation}
+=-2\pi Rh_m(C_N-C_a),\label{eq:global_conservation}
 \end{equation}
-因此，离散系统的总水分变化仅由表面对流传质决定；当 $h_m=0$ 时，$M_h$ 保持不变。
+即离散总水分仅由表面对流传质改变。
 
 \subsection{刚性常微分方程组的 BDF 求解}
+半离散系统维数为 $2(N+1)$，且不同扩散模态时间尺度差异较大，故采用
+\texttt{solve\_ivp} 的隐式 BDF 方法，以 $1$--$5$ 阶公式自适应推进\cite{hairer}。
+由于节点右端项仅依赖相邻三点，雅可比矩阵呈双场耦合的块带状结构；计算时提供其稀疏模式。取
+$\mathrm{rtol}=10^{-6}$、$\mathrm{atol}=10^{-8}$、$\Delta t_{\max}=300\,\mathrm{s}$，
+局部误差按 $|e_j|\le \mathrm{atol}_j+\mathrm{rtol}|y_j|$ 控制。
 
-\subsubsection{求解器选择与稀疏结构}
-空间半离散后，式\eqref{eq:ode_standard}的维数为 $2(N+1)$。扩散系数随温度和含水率变化，使不同空间模态的衰减尺度相差较大，系统具有刚性。本文采用 \texttt{solve\_ivp} 的隐式 BDF 方法进行时间积分；该方法按局部误差自动调整步长与 $1$--$5$ 阶公式，适合长时间扩散过程\cite{hairer}。
-
-由式\eqref{eq:fvm-r}可知，节点 $i$ 的右端项只依赖 $i-1,i,i+1$ 处的温、湿状态，因此雅可比矩阵呈双场耦合的块带状稀疏结构：
-\begin{equation}
-\mathbf{J}=
-\begin{bmatrix}
-\mathbf{J}_{TT}&\mathbf{J}_{TC}\\
-\mathbf{J}_{CT}&\mathbf{J}_{CC}
-\end{bmatrix},
-\end{equation}
-其中各子块仅在主对角线及相邻对角线上可能非零。计算时向求解器提供该稀疏模式，以减少数值雅可比估计和隐式线性方程组求解的开销。
-
-\subsubsection{误差控制与计算参数}
-BDF 采用分量尺度控制局部误差，数值上要求
-\begin{equation}
-|e_j|\le \mathrm{atol}_j+\mathrm{rtol}\,|y_j|.
-\end{equation}
-本文统一设置 $\mathrm{rtol}=10^{-6}$、$\mathrm{atol}=10^{-8}$，并取最大时间步长
-$\Delta t_{\max}=300\,\mathrm{s}$，以兼顾初期快速变化的分辨率和后期长时间积分的效率。上述参数与空间网格共同接受第七章的网格收敛性和守恒性检验。
-
-\subsubsection{终止事件与输出时刻}
-问题3、4要求全域含水率均低于 $0.15$。定义事件函数
-\begin{equation}
-g(t)=\max_{0\le i\le N}C_i(t)-0.15.
-\end{equation}
-积分过程中监测 $g(t)$ 的过零，并利用求解器的连续插值定位理论达标时刻 $t_d$。提交结果需按 $60\,\mathrm{s}$ 间隔输出，因此另在整数分钟网格上检查未经舍入的 $\max_i C_i$，将首个满足 $\max_iC_i<0.15$ 的时刻记为安全输出时刻 $t_{\mathrm{safe}}$。数值求解流程概括如图\ref{fig:flowchart}所示。
-
+问题3、4以 $g(t)=\max_iC_i(t)-0.15$ 为终止事件，连续插值得到理论时刻 $t_d$；
+再在 $60\,\mathrm{s}$ 输出网格上寻找首个满足 $\max_iC_i<0.15$ 的
+$t_{\mathrm{safe}}$。完整循环如图\ref{fig:flowchart}所示。
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    font=\small,
-    box/.style={
-        rectangle, rounded corners=3pt,
-        minimum width=6.0cm, minimum height=0.58cm,
+    font=\footnotesize,
+    process/.style={
+        rectangle, rounded corners=2.5pt,
+        minimum width=4.2cm, minimum height=0.54cm,
         align=center, draw=blue!60!black, fill=blue!4, thick
     },
-    arrow/.style={-{Stealth[length=2.2mm]}, thick, color=black!70}
+    decision/.style={
+        diamond, aspect=2.25,
+        minimum width=2.8cm, minimum height=0.68cm,
+        align=center, draw=orange!75!black, fill=orange!7, thick
+    },
+    adjust/.style={
+        rectangle, rounded corners=2.5pt,
+        minimum width=2.6cm, minimum height=0.52cm,
+        align=center, draw=teal!65!black, fill=teal!5, thick
+    },
+    arrow/.style={-{Stealth[length=2.0mm]}, thick, color=black!70}
 ]
-\node (init) [box] {参数输入与径向网格划分};
-\node (fvm) [box, below=0.32cm of init] {FVM 空间半离散，组装 $\mathbf{F}(t,\mathbf{y})$};
-\node (bdf) [box, below=0.32cm of fvm] {BDF 自适应积分（稀疏雅可比与误差控制）};
-\node (event) [box, below=0.32cm of bdf] {监测 $g(t)$，确定 $t_d$ 与 $t_{\mathrm{safe}}$};
-\node (out) [box, below=0.32cm of event] {空间采样与结果输出};
+\node (init) [process] {输入与网格};
+\node (fvm) [process, below=0.25cm of init] {FVM 组装};
+\node (bdf) [process, below=0.25cm of fvm] {BDF 试步};
+\node (error) [decision, below=0.38cm of bdf] {误差通过？};
+\node (adjust) [adjust, right=1.55cm of error] {调步长/阶次};
+\node (event) [decision, below=0.48cm of error] {$g(t)\le 0$？};
+\node (out) [process, below=0.42cm of event] {60 s 校核与输出};
 \draw [arrow] (init)--(fvm);
 \draw [arrow] (fvm)--(bdf);
-\draw [arrow] (bdf)--(event);
-\draw [arrow] (event)--(out);
+\draw [arrow] (bdf)--(error);
+\draw [arrow] (error)--node[left] {是} (event);
+\draw [arrow] (error.east)--node[above] {否} (adjust.west);
+\draw [arrow] (adjust.north)|-(bdf.east);
+\draw [arrow] (event)--node[left] {是} (out);
+\draw [arrow] (event.west)--++(-1.25,0)|-node[pos=0.25,left] {否：下一步} (bdf.west);
 \end{tikzpicture}
-\caption{FVM--BDF 数值求解流程}\label{fig:flowchart}
+\caption{FVM--BDF 自适应循环求解流程}\label{fig:flowchart}
 \end{figure}
 \subsection{移动边界收缩域的相对坐标变换（统一化格式）}
 
