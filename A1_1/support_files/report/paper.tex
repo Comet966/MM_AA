@@ -418,11 +418,11 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
     \end{equation}
     同理，由表面 Robin 对流传质边界条件式\eqref{eq:robin_m}，药材向表面的水分扩散通量与向环境空气对流蒸发散失的通量严格平衡：
     \begin{equation}
-    \left.D\frac{\partial C}{\partial r}\right|_{r=R} = -h_m(C_N-C_a).
+    \left.D\frac{\partial C}{\partial r}\right|_{r=R} = h_m(C_a-C_N).
     \end{equation}
     两端乘以边界半径 $R$，即精确得到\textbf{通过外表面向外界环境蒸发逸散的柱面加权对流传质通量} $F_R^C$：
     \begin{equation}
-    F_R^C \equiv \left.rD\frac{\partial C}{\partial r}\right|_{r=R} = -Rh_m(C_N-C_a(t)).\label{eq:f_outer_C}
+    F_R^C \equiv \left.rD\frac{\partial C}{\partial r}\right|_{r=R} = Rh_m(C_a(t)-C_N).\label{eq:f_outer_C}
     \end{equation}
   \end{itemize}
 
@@ -437,9 +437,9 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
   分别代入热、质系统的物理通量式\eqref{eq:f_inner_T}--\eqref{eq:f_outer_C}，并同除以几何测度 $\omega_N^r = \frac{1}{2}(R^2-r_-^2)$，即可严密推导得出最外层表面节点的常微分演化方程：
   \begin{align}
   \frac{dT_N}{dt} &= \frac{2\left[Rh(T_a-T_N) - r_-k_{N-1/2}\dfrac{T_N-T_{N-1}}{\Delta r}\right]}{\rho_Nc_{p,N}(R^2-r_-^2)},\label{eq:surfaceT}\\[10pt]
-  \frac{dC_N}{dt} &= \frac{2\left[-Rh_m(C_N-C_a) - r_-D_{N-1/2}\dfrac{C_N-C_{N-1}}{\Delta r}\right]}{R^2-r_-^2}.\label{eq:surfaceC}
+  \frac{dC_N}{dt} &= \frac{2\left[Rh_m(C_a-C_N) - r_-D_{N-1/2}\dfrac{C_N-C_{N-1}}{\Delta r}\right]}{R^2-r_-^2}.\label{eq:surfaceC}
   \end{align}
-  式\eqref{eq:surfaceT}直观表明“外部热风对流吸热通量 $F_R^T$ 减去向内部传导耗散的导热通量 $F_{N-1/2}^T$ 等于表层热量积累”，式\eqref{eq:surfaceC}直观表明“内部水分扩散补给通量减去表面对流蒸发散失通量决定表层含水率变化”。整个推导无需虚网格点，严格遵守界面能量与质量的连续守恒。
+  式\eqref{eq:surfaceT}直观表明“外部热风对流吸热通量 $F_R^T$ 减去向内部传导耗散的导热通量 $F_{N-1/2}^T$ 等于表层热量积累”，式\eqref{eq:surfaceC}直观表明“外部干燥空气对流蒸发通量 $F_R^C$（由于 $C_a < C_N$ 而天然为负，表示水分净散失）与内部水分扩散补给通量共同决定表层含水率变化”。整个推导无需虚网格点，形式高度对偶统一，严格遵守界面能量与质量的连续守恒。
 
   \item \textbf{全局通量守恒性证明与中心零通量约束}：
   有限体积法区别于传统有限差分法最根本的优越性，在于其能够在空间离散层面无条件维持严格的局部与全局守恒性。以全场总水分存量为例，定义单位长度药材内部的水分总质量为：
@@ -455,17 +455,17 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
   \frac{dM_h}{dt} &= 2\pi\sum_{i=0}^N \omega_i^r\frac{dC_i}{dt} = 2\pi\left(\omega_0^r\frac{dC_0}{dt} + \sum_{i=1}^{N-1}\omega_i^r\frac{dC_i}{dt} + \omega_N^r\frac{dC_N}{dt}\right)\notag\\
   &= 2\pi\left[(F_{1/2} - F_0) + \sum_{i=1}^{N-1}(F_{i+1/2} - F_{i-1/2}) + (F_R - F_{N-1/2})\right].\label{eq:telescoping_sum}
   \end{align}
-  观察式\eqref{eq:telescoping_sum}右端的求和结构，其呈现出严格的**裂项望远镜级数相消（Telescoping Cancellation）**特性：对于任意内部相邻界面 $r_{i+1/2}$，微元 $i$ 向外流出的扩散通量与微元 $i+1$ 向内流入的通量在定义上完全共用同一界面差商，其符号相反、数值完全相等，在全场求和时**逐对严格相互抵消**。
+  观察式\eqref{eq:telescoping_sum}右端的求和结构，其呈现出严格的\textbf{裂项望远镜级数相消（Telescoping Cancellation）}特性：对于任意内部相邻界面 $r_{i+1/2}$，微元 $i$ 向外流出的扩散通量与微元 $i+1$ 向内流入的通量在定义上完全共用同一界面差商，其符号相反、数值完全相等，在全场求和时\textbf{逐对严格相互抵消}。
 
-  更为关键的是，对于药材几何中心边界（$r=0$），传统有限差分法必须借助虚网格点人为施加对称梯度条件 $\left.\frac{\partial\phi}{\partial r}\right|_0=0$；**而在有限体积法的积分形式下，中心对称轴界面的物理面积度量与柱坐标加权测度严格正比于半径：当 $r\to 0$ 时，界面面积自然收缩至零，使得中心界面通量在数值格式中天然恒等于零：**
+  更为关键的是，对于药材几何中心边界（$r=0$），传统有限差分法必须借助虚网格点人为施加对称梯度条件 $\left.\frac{\partial\phi}{\partial r}\right|_0=0$；\textbf{而在有限体积法的积分形式下，中心对称轴界面的物理面积度量与柱坐标加权测度严格正比于半径：当 $r\to 0$ 时，界面面积自然收缩至零，使得中心界面通量在数值格式中天然恒等于零：}
   \begin{equation}
   F_0 = \lim_{r\to 0} r\Gamma\frac{\partial\phi}{\partial r} \equiv 0.
   \end{equation}
-  因此，有限体积法**无需引入任何人工对称边界截断或外推假设，即可天然、无条件地自动满足中心零通量（$F_0=0$）的物理约束**。
+  因此，有限体积法\textbf{无需引入任何人工对称边界截断或外推假设，即可天然、无条件地自动满足中心零通量（$F_0=0$）的物理约束}。
 
   内界面通量相消并结合中心零通量约束后，式\eqref{eq:telescoping_sum}精确退化为：
   \begin{equation}
-  \frac{dM_h}{dt} = 2\pi F_R = -2\pi Rh_m(C_N - C_a).
+  \frac{dM_h}{dt} = 2\pi F_R^C = 2\pi Rh_m(C_a - C_N) = -2\pi Rh_m(C_N - C_a).
   \end{equation}
   该式从数学上严格表明：药材全场总水分的时间衰减率，精确等于外表面逸散至烘房环境的对流传质总通量，介质内部绝无任何由于数值差分近似而引起的虚假质量源或质量漏；当考虑孤立绝热闭合系统（令 $h=0, h_m=0$）时，$F_R\equiv 0$，全场总存量满足 $\frac{dM_h}{dt}\equiv 0$，数值系统在任意空间网格密度与时间尺度下均严格保持总质量守恒。这在理论上完全证明了有限体积法在线方法框架下的无损全局守恒品质。
 \end{enumerate}
