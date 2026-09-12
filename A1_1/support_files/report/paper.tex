@@ -207,18 +207,45 @@ $t_{\mathrm{safe}}$ & 60\,s 网格安全达标时刻 & h\\
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[scale=0.7]
-    % Cylinder body
-    \draw[thick] (0,2) ellipse (1 and 0.3);
-    \draw[thick] (-1,2) -- (-1,-2);
-    \draw[thick] (1,2) -- (1,-2);
-    \draw[thick] (-1,-2) arc (180:360:1 and 0.3);
-    \draw[dashed] (-1,-2) arc (180:0:1 and 0.3);
-    % Dimensions
-    \draw[->, thick] (0,0) -- (1,0) node[midway, above] {$R_0=2\text{ cm}$};
-    \draw[<->, thick] (-1.5,-2) -- (-1.5,2) node[midway, left] {$L=25\text{ cm}$};
+\begin{tikzpicture}[scale=0.95, >=stealth]
+    % Cylinder fills
+    \fill[blue!5] (-1.5, -2) -- (-1.5, 2) arc (180:360:1.5 and 0.45) -- (1.5, -2) arc (0:-180:1.5 and 0.45);
+    \fill[blue!15] (0, 2) ellipse (1.5 and 0.45);
+
+    % Top ellipse
+    \draw[thick, fill=blue!15] (0,2) ellipse (1.5 and 0.45);
+    \fill (0,2) circle (1.5pt) node[below=2pt, font=\footnotesize] {$O$};
+
+    % Bottom arcs
+    \draw[thick] (-1.5,-2) arc (180:360:1.5 and 0.45);
+    \draw[dashed, gray!70] (-1.5,-2) arc (180:0:1.5 and 0.45);
+
+    % Cylinder sides
+    \draw[thick] (-1.5,2) -- (-1.5,-2);
+    \draw[thick] (1.5,2) -- (1.5,-2);
+
+    % Center axis
+    \draw[dashdotted, gray!60, thick] (0, 3.0) -- (0, -3.0) node[below, font=\footnotesize] {中心对称轴 ($r=0$)};
+
+    % Radius R0 dimension above the top ellipse
+    \draw[gray!70] (0, 2) -- (0, 2.7);
+    \draw[gray!70] (-1.5, 2) -- (-1.5, 2.7);
+    \draw[<->, thick, red!80!black] (0, 2.6) -- (-1.5, 2.6) node[midway, above=1pt, font=\small] {$R_0=2\,\mathrm{cm}$};
+
+    % Length dimension on the left
+    \draw[gray!70] (-1.5, 2) -- (-2.2, 2);
+    \draw[gray!70] (-1.5, -2) -- (-2.2, -2);
+    \draw[<->, thick, teal!80!black] (-2.1, -2) -- (-2.1, 2) node[midway, left=1pt, font=\small] {$L=25\,\mathrm{cm}$};
+
+    % Labels for side and end faces (on the right)
+    % Top end face
+    \draw[<-, thick, blue!80!black] (0.8, 2.1) to[out=30, in=180] (2.4, 2.6) node[right, font=\small] {端面（顶部端面，截面积 $A_{\text{end}}$）};
+    % Side surface
+    \draw[<-, thick, blue!80!black] (1.5, 0.0) -- (2.4, 0.0) node[right, font=\small] {侧面（圆柱周向侧表面 $A_{\text{side}}$）};
+    % Bottom end face
+    \draw[<-, thick, blue!80!black] (0.8, -2.1) to[out=-30, in=180] (2.4, -2.6) node[right, font=\small] {端面（底部端面，截面积 $A_{\text{end}}$）};
 \end{tikzpicture}
-\caption{圆柱药材几何示意图}\label{fig:cylinder}
+\caption{圆柱药材几何结构及侧面、端面划分示意图}\label{fig:cylinder}
 \end{figure}
 
 \subsection{直角坐标系下的扩散方程和守恒定律}
@@ -270,6 +297,63 @@ r = \sqrt{x^2+y^2},\\[4pt]
 z = z.
 \end{cases}
 \end{equation}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.1, >=stealth]
+    % Coordinate axes
+    \coordinate (O) at (0,0);
+    \draw[->, thick] (O) -- (-2.5,-1.875) node[below left] {$x$};
+    \draw[->, thick] (O) -- (4.8,0) node[right] {$y$};
+    \draw[->, thick] (O) -- (0,4.4) node[above] {$z$};
+    \node[below left=2pt, font=\small] at (O) {$O$};
+
+    % Projection of P on xy-plane
+    \coordinate (P_xy) at (2.4,-1.0);
+    \coordinate (Px) at (-1.33,-1.0); % projection on x-axis
+    \coordinate (Py) at (3.73,0);       % projection on y-axis
+
+    % Point P in space at height z=2.4
+    \coordinate (P) at (2.4,2.4);
+    \coordinate (Pz) at (0,2.4);
+
+    % Circular guide on xy-plane
+    \draw[dashed, blue!40, thick] (-2.0,-1.5) arc (-143:12:3.0 and 1.25);
+
+    % Grid lines on xy-plane
+    \draw[dashed, gray!70] (Px) -- (P_xy);
+    \draw[dashed, gray!70] (Py) -- (P_xy);
+    \node[below left, font=\footnotesize, text=gray!80!black] at (Px) {$x=r\cos\theta$};
+    \node[above=2pt, font=\footnotesize, text=gray!80!black] at (Py) {$y=r\sin\theta$};
+
+    % Radial distance r on xy-plane
+    \draw[-, very thick, blue!85!black] (O) -- (P_xy);
+    \node[blue!85!black, font=\small, fill=white, inner sep=1pt] at (1.4,-0.8) {$r=\sqrt{x^2+y^2}$};
+
+    % Angle theta arc
+    \draw[->, thick, red!85!black] (-0.6,-0.45) arc (-143:-22:0.75);
+    \node[red!85!black, font=\small] at (-0.05,-0.4) {$\theta$};
+
+    % Height z line from P_xy to P
+    \draw[dashed, very thick, teal!80!black] (P_xy) -- (P) node[midway, right=2pt, font=\small] {$z$};
+    \draw[dashed, gray!60] (O) -- (Pz);
+    \draw[dashed, gray!60] (Pz) -- (P);
+
+    % Point P and P'
+    \fill[gray!70] (P_xy) circle (2pt) node[below right=2pt, font=\footnotesize, text=gray!80!black] {$P'(x,y,0)$};
+    \fill[red!80!black] (P) circle (2.2pt);
+    \node[left=8pt, font=\small, fill=white, inner sep=2pt] at (P) {$P(x,y,z)\equiv P(r,\theta,z)$};
+
+    % Orthogonal unit vectors at P
+    \draw[->, very thick, purple] (P) -- ++(1.1,-0.46) node[right, font=\small] {$\mathbf{e}_r$};
+    \draw[->, very thick, orange!90!black] (P) -- ++(0.75,0.65) node[above right, font=\small] {$\mathbf{e}_\theta$};
+    \draw[->, very thick, teal] (P) -- ++(0,1.2) node[above, font=\small] {$\mathbf{e}_z$};
+
+    % Cylinder surface ellipse outline at height z
+    \draw[dotted, gray!45] (0,2.4) ellipse (2.6 and 1.08);
+\end{tikzpicture}
+\caption{直角坐标系 $(x,y,z)$ 与正交柱坐标系 $(r,\theta,z)$ 的几何变换示意图}\label{fig:cyl_transform}
+\end{figure}
 根据多元微积分复合函数的链式求导法则，两种坐标系下的偏微分算子满足如下关系：
 \begin{equation}
 \begin{bmatrix}
@@ -384,7 +468,6 @@ z = z.
   \begin{equation}
   \left.\frac{\partial T}{\partial r}\right|_{r=0} = 0,\qquad \left.\frac{\partial C}{\partial r}\right|_{r=0} = 0.\label{eq:centerbc}
   \end{equation}
-  针对方程右端几何因子 $\frac{1}{r}$ 在中心 $r=0$ 处引起的表面几何奇点，在连续性理论上，由 L'Hôpital 法则可知 $\lim_{r\to 0}\frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right) = 2\Gamma\left.\frac{\partial^2\phi}{\partial r^2}\right|_{r=0}$，物理量在中心处二阶导数有限且光滑；而在有限体积法中，中心控制体在 $r=0$ 处的界面面积恒为零，界面热质通量自然消失，数值离散可天然规避 $1/r$ 奇点，无需进行奇异项除法。
 
   \item \textbf{外表面 Robin 传热与传质条件}：
   在药材与烘房热风接触的侧表面 $r=R$ 处，传热与传质遵循界面通量守恒原理。药材由内向外的热通量与水分通量，等于表面向外部环境对流换热与对流蒸发传质的净通量，分别服从 Newton 冷却定律与表面对流传质定律：
