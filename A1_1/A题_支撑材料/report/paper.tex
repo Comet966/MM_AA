@@ -88,8 +88,100 @@ $t_d$ & 全场含水率达到阈值的时间 & h\\
 \end{table}
 
 \section{模型建立}
-\subsection{固定半径的热质耦合方程}
-忽略轴向变化后，问题1--3在 $0\le r\le R$ 上满足
+\subsection{固定半径热质耦合控制方程的物理推导与建立}
+药材热风烘干过程本质上是热量由烘房热风向药材内部传导、水分由药材内部向表面迁移蒸发的耦合非定常传递过程，二者均严格遵循“微元内物理量的时间积累率等于各边界面通量的净流入率”之守恒原理。
+
+\subsubsection{直角坐标系下的守恒定律与本构方程}
+药材内部的热量传递与水分迁移具有高度的物理对偶性与数学对称性，二者均由梯度驱动的通量本构关系和微元守恒原理共同确定。
+
+首先，在通量本构层面，各向同性介质内的热流密度矢量 $\mathbf{q}$ 与水分扩散通量矢量 $\mathbf{J}$ 分别服从 Fourier 导热定律与 Fick 扩散第一定律：
+\begin{align}
+\mathbf{q} &= -k\nabla T,\label{eq:fourier}\\
+\mathbf{J} &= -D\nabla C,\label{eq:fick}
+\end{align}
+其中 $k$ 为介质的导热系数，$D$ 为水分有效扩散系数，$T$ 为绝对温度，$C$ 为干基含水率；负号表示热量自高温区向低温区传导、水分自高浓度区向低浓度区迁移。
+
+其次，在微元守恒层面，由连续介质力学原理，微元控制体内物理量的时间积累率严格等于通过控制体各界面的净流入通量。忽略内部反应与相变内热源，热能与水分分别满足能量守恒定律与质量守恒定律：
+\begin{align}
+\rho c_p\frac{\partial T}{\partial t} &= -\nabla\cdot\mathbf{q},\label{eq:cons_energy}\\
+\frac{\partial C}{\partial t} &= -\nabla\cdot\mathbf{J},\label{eq:cons_mass}
+\end{align}
+其中 $\rho$ 为药材密度，$c_p$ 为定压比热容。
+
+将 Fourier 导热定律式\eqref{eq:fourier}与能量守恒方程\eqref{eq:cons_energy}联立，Fick 扩散定律式\eqref{eq:fick}与质量守恒方程\eqref{eq:cons_mass}联立，分别得到包含 $\nabla$ 算子的控制方程：
+\begin{align}
+\rho c_p\frac{\partial T}{\partial t} &= \nabla\cdot(k\nabla T),\label{eq:div_heat}\\
+\frac{\partial C}{\partial t} &= \nabla\cdot(D\nabla C).\label{eq:div_mass}
+\end{align}
+在三维直角坐标系 $(x,y,z)$ 下展开上述方程，即可导出直角坐标系下的三维热质耦合控制偏微分方程：
+\begin{align}
+\rho c_p\frac{\partial T}{\partial t}
+&=\frac{\partial}{\partial x}\left(k\frac{\partial T}{\partial x}\right)
++\frac{\partial}{\partial y}\left(k\frac{\partial T}{\partial y}\right)
++\frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right),\label{eq:cartesian_heat}\\
+\frac{\partial C}{\partial t}
+&=\frac{\partial}{\partial x}\left(D\frac{\partial C}{\partial x}\right)
++\frac{\partial}{\partial y}\left(D\frac{\partial C}{\partial y}\right)
++\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).\label{eq:cartesian_mass}
+\end{align}
+
+\subsubsection{直角坐标系到柱坐标系的变换推导与控制方程建立}
+由于中药材外观呈规则圆柱体形态，在直角坐标系下边界几何曲面（$x^2+y^2=R^2$）描述较为繁琐，且难以直接施加表面径向对流与扩散边界条件。因此，必须将式\eqref{eq:cartesian_heat}、\eqref{eq:cartesian_mass}所示的控制方程由直角坐标系 $(x,y,z)$ 变换至正交柱坐标系 $(r,\theta,z)$。
+
+直角坐标与柱坐标之间的正变换与逆变换关系为：
+\begin{equation}
+\begin{cases}
+x = r\cos\theta,\\
+y = r\sin\theta,\\
+z = z,
+\end{cases}
+\iff
+\begin{cases}
+r = \sqrt{x^2+y^2},\\[4pt]
+\theta = \arctan(y/x),\\[4pt]
+z = z.
+\end{cases}
+\end{equation}
+根据多元微积分复合函数的链式求导法则，空间一阶偏导数算子的对应变换关系为：
+\begin{align}
+\frac{\partial}{\partial x} &= \frac{\partial r}{\partial x}\frac{\partial}{\partial r} + \frac{\partial\theta}{\partial x}\frac{\partial}{\partial\theta} = \cos\theta\frac{\partial}{\partial r} - \frac{\sin\theta}{r}\frac{\partial}{\partial\theta},\\
+\frac{\partial}{\partial y} &= \frac{\partial r}{\partial y}\frac{\partial}{\partial r} + \frac{\partial\theta}{\partial y}\frac{\partial}{\partial\theta} = \sin\theta\frac{\partial}{\partial r} + \frac{\cos\theta}{r}\frac{\partial}{\partial\theta},\\
+\frac{\partial}{\partial z} &= \frac{\partial}{\partial z}.
+\end{align}
+微元线元弧长平方 $ds^2=dx^2+dy^2+dz^2=dr^2+r^2d\theta^2+dz^2$，给出柱坐标系下的三个正交 Lamé 尺度因子分别为 $h_r=1, h_\theta=r, h_z=1$。据此，标量场 $\phi$ 的梯度矢量在柱坐标正交基底 $(\mathbf{e}_r,\mathbf{e}_\theta,\mathbf{e}_z)$ 下表示为：
+\begin{equation}
+\nabla\phi = \frac{1}{h_r}\frac{\partial\phi}{\partial r}\mathbf{e}_r + \frac{1}{h_\theta}\frac{\partial\phi}{\partial\theta}\mathbf{e}_\theta + \frac{1}{h_z}\frac{\partial\phi}{\partial z}\mathbf{e}_z = \mathbf{e}_r\frac{\partial\phi}{\partial r} + \mathbf{e}_\theta\frac1r\frac{\partial\phi}{\partial\theta} + \mathbf{e}_z\frac{\partial\phi}{\partial z}.
+\end{equation}
+对于任意矢量场 $\mathbf{A}=A_r\mathbf{e}_r+A_\theta\mathbf{e}_\theta+A_z\mathbf{e}_z$，由正交曲线坐标系下的散度算子公式：
+\begin{equation}
+\nabla\cdot\mathbf{A} = \frac{1}{h_rh_\theta h_z}\left[\frac{\partial}{\partial r}(h_\theta h_zA_r) + \frac{\partial}{\partial\theta}(h_rh_zA_\theta) + \frac{\partial}{\partial z}(h_rh_\theta A_z)\right] = \frac1r\frac{\partial}{\partial r}(rA_r) + \frac1r\frac{\partial A_\theta}{\partial\theta} + \frac{\partial A_z}{\partial z}.
+\end{equation}
+将传热通量矢量 $\mathbf{A}=k\nabla T$ 与传质通量矢量 $\mathbf{A}=D\nabla C$ 在柱坐标下的正交分量分别代入上述散度展开式中：
+\begin{align}
+\nabla\cdot(k\nabla T) &= \frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right) + \frac1r\frac{\partial}{\partial\theta}\left(\frac{k}{r}\frac{\partial T}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right)\notag\\
+&= \frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right) + \frac{1}{r^2}\frac{\partial}{\partial\theta}\left(k\frac{\partial T}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right),\\
+\nabla\cdot(D\nabla C) &= \frac1r\frac{\partial}{\partial r}\left(rD\frac{\partial C}{\partial r}\right) + \frac1r\frac{\partial}{\partial\theta}\left(\frac{D}{r}\frac{\partial C}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right)\notag\\
+&= \frac1r\frac{\partial}{\partial r}\left(rD\frac{\partial C}{\partial r}\right) + \frac{1}{r^2}\frac{\partial}{\partial\theta}\left(D\frac{\partial C}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).
+\end{align}
+由此推导并在推导之后给出柱坐标系下的三维具体展开形式：
+\begin{align}
+\rho c_p\frac{\partial T}{\partial t}
+&=\frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right)
++\frac{1}{r^2}\frac{\partial}{\partial\theta}\left(k\frac{\partial T}{\partial\theta}\right)
++\frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right),\label{eq:cyl_heat}\\
+\frac{\partial C}{\partial t}
+&=\frac1r\frac{\partial}{\partial r}\left(rD\frac{\partial C}{\partial r}\right)
++\frac{1}{r^2}\frac{\partial}{\partial\theta}\left(D\frac{\partial C}{\partial\theta}\right)
++\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).\label{eq:cyl_mass}
+\end{align}
+
+进一步结合烘干实验工况与药材几何参数，进行合理降维与物理简化：
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{圆周轴对称性}：药材圆柱关于中心轴呈几何对称，且烘房内热风均匀掠过圆柱周向外表面，因此温度场和水分场与周向角 $\theta$ 无关，即 $\frac{\partial T}{\partial\theta}=0$、$\frac{\partial C}{\partial\theta}=0$，角向导数项严格为零。
+  \item \textbf{忽略轴向扩散}：药材长度 $L=25\text{ cm}$，初始半径 $R_0=2\text{ cm}$，长径比 $L/(2R_0)=6.25\gg1$。内部传递距离以径向为主（热量由外周传入 $2\text{ cm}$，水分由内向外周析出 $2\text{ cm}$），两端端部效应仅局限在微小近端区域，圆柱主体内部轴向梯度远小于径向梯度（$\left|\frac{\partial T}{\partial z}\right|\ll\left|\frac{\partial T}{\partial r}\right|$，$\left|\frac{\partial C}{\partial z}\right|\ll\left|\frac{\partial C}{\partial r}\right|$），故轴向扩散项 $\frac{\partial}{\partial z}\approx0$ 可合理忽略。
+\end{enumerate}
+
+最终，在柱坐标变换与几何降维的推导之后，导出固定物理半径下具体柱坐标控制偏微分方程的一维径向展开形式。问题1--3在固定物理半径 $0\le r\le R$ 上满足：
 \begin{align}
 \rho(C)c_p(C)\frac{\partial T}{\partial t}
 &=\frac1r\frac{\partial}{\partial r}\left(rk(C)\frac{\partial T}{\partial r}\right),\label{eq:heat}\\

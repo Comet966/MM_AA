@@ -46,3 +46,4 @@ tmp/
 *.fdb_latexmk
 *.fls
 *.xdv
+**/report/*.pdf
