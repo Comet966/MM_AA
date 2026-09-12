@@ -1,0 +1,13 @@
+{
+  "profile_convergence": {
+    "q1_temperature_c_max_abs_321_vs_641": 5.751297294409596e-06,
+    "q1_moisture_max_abs_321_vs_641": 8.69446883249303e-05,
+    "q2_temperature_c_max_abs_321_vs_641": 3.2208540687861387e-06,
+    "q2_moisture_max_abs_321_vs_641": 2.9187509156258784e-06
+  },
+  "uniform_equilibrium_max_abs_error": 2.05773176276125e-11,
+  "closed_system_moisture_conservation_relative_error": 1.6148727213168491e-15,
+  "q3_space_last_refinement_relative_change": 0.0009233102565405242,
+  "q4_space_last_refinement_relative_change": 0.00045231627091144825,
+  "q4_time_30_vs_15_relative_change": 1.483153205065915e-05
+}
