@@ -493,10 +493,10 @@ z = z.
 
 \section{问题求解}
 
-\subsection{问题1：恒定物性下的初期瞬态场}
+\subsection{问题1：恒定热物性下的预热阶段温度与水分场}
 
-\subsubsection{求解思路与联立方程}
-问题1采用附录2给出的恒定热物性，并保留含水率对扩散系数的影响。令
+\subsubsection{模型建立}
+问题1研究前 $1800\,\mathrm{s}$ 预热平衡阶段内药材温度与水分浓度的瞬态变化。该阶段药材半径保持为 $R=0.02\,\mathrm m$，附录2给出的密度、比热容和热传导系数均取常数，而水分扩散系数随局部干基含水率变化，即
 \begin{equation}
 \begin{aligned}
 \rho_1&=820\ \mathrm{kg/m^3},&
@@ -505,7 +505,8 @@ k_1&=0.36\ \mathrm{W/(m\cdot K)},&
 D_1(C)&=7.0\times10^{-9}\exp\!\left(-\frac{0.89}{C}\right)\ \mathrm{m^2/s}.
 \end{aligned}
 \end{equation}
-将上述物性与附件1的环境温湿度边界代入第五章模型，得到
+
+将上述物性参数及附件1给出的烘房环境边界代入第五章建立的一维径向模型，得到问题1的完整初边值问题：
 \begin{equation}
 \left\{
 \begin{aligned}
@@ -523,55 +524,46 @@ T(r,0)&=301.15\ \mathrm{K},\qquad C(r,0)=2.55,
 \end{aligned}
 \right.\label{eq:q1_system}
 \end{equation}
-其中 $R=0.02\ \mathrm{m}$、$h=25\ \mathrm{W/(m^2\cdot K)}$、
-$h_m=8.0\times10^{-7}\ \mathrm{m/s}$。由此可直接计算前30 min内的温湿场。
+其中 $h=25\ \mathrm{W/(m^2\cdot K)}$，$h_m=8.0\times10^{-7}\ \mathrm{m/s}$。由于温度方程中不含 $C$，水分方程中的 $D_1$ 也不依赖 $T$，故问题1的温度场和水分场解耦，可在同一数值框架下分别推进。
 
-\subsubsection{数值求解}
-为兼顾守恒性与计算效率，仅对空间变量作有限体积离散。令
-$(\phi,q,\Gamma)=(T,\rho c_p,k)$ 或 $(C,1,D)$，在网格
-$r_i=i\Delta r$ 上对控制体积分，内部节点满足
+\subsubsection{模型求解}
+首先对附件1给出的离散环境数据作分段线性插值，构造连续边界函数 $T_a(t)$ 和 $C_a(t)$，并将温度统一换算为绝对温度。随后仅对径向空间变量作有限体积离散，以保持热量和水分通量的离散守恒性。将区间 $[0,R]$ 均分为 $N=160$ 段，设置161个径向节点
+\begin{equation}
+r_i=i\Delta r,\qquad \Delta r=\frac{R}{N}=1.25\times10^{-4}\ \mathrm m
+=0.0125\ \mathrm{cm},\qquad i=0,1,\ldots,N.
+\end{equation}
+令 $(\phi,q,\Gamma)=(T,\rho_1c_{p1},k_1)$ 或 $(C,1,D_1)$，对第 $i$ 个环形控制体积分，内部节点的半离散方程为
 \begin{equation}
 q_i\omega_i^r\frac{d\phi_i}{dt}=F_{i+1/2}-F_{i-1/2},\qquad
 F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}
 \frac{\phi_{i+1}-\phi_i}{\Delta r},\label{eq:fvm-r}
 \end{equation}
-其中 $\omega_i^r=(r_{i+1/2}^2-r_{i-1/2}^2)/2$，界面系数取调和平均
+其中 $\omega_i^r=(r_{i+1/2}^2-r_{i-1/2}^2)/2$ 为控制体几何权重，并在圆心和表面分别取 $r_{-1/2}=0$、$r_{N+1/2}=R$。界面系数采用调和平均
 $\Gamma_{i+1/2}=2\Gamma_i\Gamma_{i+1}/(\Gamma_i+\Gamma_{i+1})$
-\cite{patankar}。圆心通量取零，外表面 Robin 条件直接写成
+\cite{patankar}，以保证相邻控制体界面通量连续。圆心对称条件对应零通量，外表面 Robin 条件写成
 \begin{equation}
 F_R^T=Rh(T_a-T_N),\qquad F_R^C=Rh_m(C_a-C_N).
 \end{equation}
-内部通量相消后，离散总水分 $M_h=2\pi\sum_i\omega_i^rC_i$ 满足
+定义单位轴向长度截面内的含水率加权积分 $I_C=2\pi\sum_i\omega_i^rC_i$，内部界面通量逐项相消后有
 \begin{equation}
-\frac{dM_h}{dt}=2\pi F_R^C=-2\pi Rh_m(C_N-C_a),
+\frac{dI_C}{dt}=2\pi F_R^C=-2\pi Rh_m(C_N-C_a),
 \label{eq:global_conservation}
 \end{equation}
-说明水分变化仅由表面对流传质引起。
+表明离散系统中水分的变化仅由表面对流传质通量引起。
 
-将各节点的温度、含水率依次排列为状态向量，PDE 即化为标准初值问题
+将各节点温度与含水率依次排列为状态向量，空间离散后的偏微分方程组即转化为常微分方程初值问题
 \begin{equation}
 \mathbf y=[T_0,\ldots,T_N,C_0,\ldots,C_N]^T,\qquad
 \frac{d\mathbf y}{dt}=\mathbf F(t,\mathbf y),\quad \mathbf y(0)=\mathbf y_0.
 \label{eq:ode_standard}
 \end{equation}
-由于扩散模态时间尺度相差较大，采用隐式 BDF 方法。其 $k$ 阶格式可写为
+由于热传导和水分扩散对应的特征时间尺度相差较大，离散系统具有刚性，故采用隐式后向差分公式（BDF）积分。其 $k$ 阶格式可写为
 \begin{equation}
 \sum_{j=0}^{k}\alpha_j\mathbf y_{n+1-j}
 =\Delta t_n\beta\,\mathbf F(t_{n+1},\mathbf y_{n+1}),\qquad 1\le k\le5,
 \end{equation}
 每一步通过 Newton 迭代求解，并按局部误差自适应调整步长与阶次
-\cite{hairer}。程序中将有限体积组装得到的右端函数直接传入求解器，关键调用如下：
-\begin{lstlisting}[caption={有限体积右端项传入 BDF 求解器的关键代码},label={code:solver}]
-grid, rhs = make_fixed_rhs(R, node_count, model, environment)
-y0 = np.r_[np.full(node_count, T0), np.full(node_count, C0)]
-sol = solve_ivp(
-    rhs, (0.0, t_end), y0, method="BDF",
-    rtol=1e-6, atol=1e-8, max_step=300.0,
-    jac_sparsity=coupled_jacobian_sparsity(node_count),
-    events=events,
-)
-\end{lstlisting}
-其中相对、绝对误差限分别为 $10^{-6}$ 和 $10^{-8}$，并利用块带状雅可比稀疏结构加速计算。求解器的循环过程如图\ref{fig:flowchart}所示。
+\cite{hairer}。计算中相对误差限和绝对误差限分别设为 $10^{-6}$ 与 $10^{-8}$，最大内部步长设为 $300\,\mathrm s$，并利用块带状雅可比稀疏结构加速求解。求得连续时间数值解后，每隔 $1\,\mathrm s$ 提取一次结果，并按 $0.1\,\mathrm{cm}$ 的径向间隔写入 \texttt{result1.xlsx}。求解流程如图\ref{fig:flowchart}所示。
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
@@ -593,13 +585,13 @@ sol = solve_ivp(
     },
     arrow/.style={-{Stealth[length=2.0mm]}, thick, color=black!70}
 ]
-\node (init) [process] {输入与网格};
+\node (init) [process] {输入物性、环境数据与径向网格};
 \node (fvm) [process, below=0.25cm of init] {FVM 组装};
 \node (bdf) [process, below=0.25cm of fvm] {BDF 试步};
 \node (error) [decision, below=0.38cm of bdf] {误差通过？};
 \node (adjust) [adjust, right=1.55cm of error] {调步长/阶次};
-\node (event) [decision, below=0.48cm of error] {$g(t)\le 0$？};
-\node (out) [process, below=0.42cm of event] {60 s 校核与输出};
+\node (event) [decision, below=0.48cm of error] {$t\ge1800\,\mathrm{s}$？};
+\node (out) [process, below=0.42cm of event] {按题定时空间隔提取并输出};
 \draw [arrow] (init)--(fvm);
 \draw [arrow] (fvm)--(bdf);
 \draw [arrow] (bdf)--(error);
@@ -612,10 +604,48 @@ sol = solve_ivp(
 \caption{FVM--BDF 自适应循环求解流程}\label{fig:flowchart}
 \end{figure}
 
-\subsubsection{计算结果}
-采用161个径向节点计算至1800 s。此时中心、表面温度分别为
-33.5754 $^\circ$C 和 36.7859 $^\circ$C；中心含水率仍为
-2.5500 kg/kg，表面已降至 1.5103 kg/kg。温度由表面向内传导，水分则先在外层形成低含水率边界层，结果见图\ref{fig:q1_profiles}和图\ref{fig:q1_heatmaps}。
+\subsubsection{计算结果与分析}
+表\ref{tab:q1t}与表\ref{tab:q1c}分别列出了题目指定时刻和径向位置处的温度与水分浓度，完整的逐秒、逐 $0.1\,\mathrm{cm}$ 结果保存在 \texttt{result1.xlsx} 中。
+
+\begin{table}[H]
+\centering
+\caption{问题1：30 min 内药材温度（$^\circ$C）}\label{tab:q1t}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+时间/s & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+100 & 28.0001 & 28.0003 & 28.0040 & 28.0327 & 28.1801 \\
+300 & 28.0408 & 28.0635 & 28.1516 & 28.3680 & 28.8476 \\
+600 & 28.4534 & 28.5361 & 28.8039 & 29.3163 & 30.1662 \\
+900 & 29.3243 & 29.4583 & 29.8756 & 30.6159 & 31.7306 \\
+1200 & 30.5425 & 30.7095 & 31.2220 & 32.1118 & 33.4260 \\
+1500 & 31.9954 & 32.1864 & 32.7657 & 33.7462 & 35.1225 \\
+1800 & 33.5754 & 33.7721 & 34.3641 & 35.3622 & 36.7859 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{问题1：30 min 内水分浓度（kg/kg）}\label{tab:q1c}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+时间/s & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+100 & 2.5500 & 2.5500 & 2.5500 & 2.5500 & 2.2475 \\
+300 & 2.5500 & 2.5500 & 2.5500 & 2.5492 & 2.0510 \\
+600 & 2.5500 & 2.5500 & 2.5500 & 2.5353 & 1.8771 \\
+900 & 2.5500 & 2.5500 & 2.5497 & 2.5045 & 1.7548 \\
+1200 & 2.5500 & 2.5500 & 2.5482 & 2.4646 & 1.6586 \\
+1500 & 2.5500 & 2.5499 & 2.5445 & 2.4206 & 1.5788 \\
+1800 & 2.5500 & 2.5497 & 2.5383 & 2.3755 & 1.5103 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+由表\ref{tab:q1t}与表\ref{tab:q1c}可知，药材各位置的温度随时间持续升高，并保持表面高、中心低的径向分布；至 $1800\,\mathrm s$ 时，表面温度比中心高 $3.2105\,{}^\circ\mathrm C$。水分则首先从外层逸出，表面含水率已较初值下降 $1.0397\,\mathrm{kg/kg}$，而中心含水率在四位小数下仍为初值。图\ref{fig:q1_profiles}与图\ref{fig:q1_heatmaps}进一步表明，30 min内温度扰动已明显向内部传播，水分变化仍主要集中在药材外层，说明该阶段热扩散快于水分扩散。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\textwidth]{question1_profiles.png}
@@ -624,12 +654,12 @@ sol = solve_ivp(
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{question1_heatmaps.png}
-\caption{问题1前30 min温度场与水分场的二维时空全景演化热力图}\label{fig:q1_heatmaps}
+\caption{问题1前30 min温度场与水分浓度场的二维时空演化热力图}\label{fig:q1_heatmaps}
 \end{figure}
 
 \subsection{问题2：非线性物性下的耦合演化}
 
-\subsubsection{求解思路与联立方程}
+\subsubsection{模型建立}
 问题2沿用式\eqref{eq:q1_system}的控制方程、初始条件和边界条件，仅将物性替换为附录3给出的非线性函数：
 \begin{equation}
 \begin{aligned}
@@ -641,10 +671,50 @@ D_2(C,T)&=2.4\times10^{-3}
 \exp\!\left(-\frac{3850}{T}\right).
 \end{aligned}\label{eq:q2_properties}
 \end{equation}
-将式\eqref{eq:q2_properties}代入传热传质方程即得到问题2的联立系统；按与问题1相同的有限体积--BDF流程，采用201个径向节点求解前3 h。
+将式\eqref{eq:q2_properties}代入传热传质方程，即得到问题2的非线性热质耦合模型。
 
-\subsubsection{计算结果}
+\subsubsection{模型求解}
+沿用问题1的有限体积--BDF流程，将温度和水分浓度共同组成状态向量，并在每次右端项计算时根据当前状态更新各节点物性。采用201个径向节点求解前3 h的温度场和水分场。
+
+\subsubsection{计算结果与分析}
 在10800 s时，中心与表面温度分别为49.8484 $^\circ$C和49.8975 $^\circ$C，温差不足0.05 $^\circ$C；中心与表面含水率分别为1.7658 kg/kg和1.0080 kg/kg。说明温度场已接近准平衡，而水分场仍保持明显梯度，结果见图\ref{fig:q2_profiles}和图\ref{fig:q2_heatmaps}。
+
+\begin{table}[H]
+\centering
+\caption{问题2：3 h 内药材温度（$^\circ$C）}\label{tab:q2t}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+0.5 & 32.1893 & 32.3822 & 32.9658 & 33.9602 & 35.4140 \\
+1.0 & 40.3812 & 40.5532 & 41.0602 & 41.8776 & 42.9947 \\
+1.5 & 45.8464 & 45.9346 & 46.1929 & 46.6054 & 47.1418 \\
+2.0 & 48.4507 & 48.4885 & 48.5988 & 48.7732 & 49.0041 \\
+2.5 & 49.5259 & 49.5383 & 49.5744 & 49.6312 & 49.7046 \\
+3.0 & 49.8484 & 49.8518 & 49.8617 & 49.8773 & 49.8975 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{问题2：3 h 内水分浓度（kg/kg）}\label{tab:q2c}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+0.5 & 2.5499 & 2.5489 & 2.5256 & 2.3257 & 1.6486 \\
+1.0 & 2.5257 & 2.4948 & 2.3578 & 2.0230 & 1.4711 \\
+1.5 & 2.3861 & 2.3256 & 2.1344 & 1.8020 & 1.3476 \\
+2.0 & 2.1708 & 2.1084 & 1.9236 & 1.6259 & 1.2311 \\
+2.5 & 1.9562 & 1.9002 & 1.7357 & 1.4720 & 1.1172 \\
+3.0 & 1.7658 & 1.7162 & 1.5700 & 1.3333 & 1.0080 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\textwidth]{question2_profiles.png}
@@ -658,21 +728,47 @@ D_2(C,T)&=2.4\times10^{-3}
 
 \subsection{问题3：固定半径下的干燥终点}
 
-\subsubsection{求解思路与联立方程}
+\subsubsection{模型建立}
 问题3直接沿用问题2的联立系统，将计算时域延长并增加全场终止事件
 \begin{equation}
 g(t)=\max_{0\le r\le R}C(r,t)-0.15=0.
 \label{eq:q3_event}
 \end{equation}
+
+\subsubsection{模型求解}
 采用801个径向节点连续定位理论终点，再在60 s输出网格上取首个满足
 $\max C<0.15$ 的安全时刻。
 
-\subsubsection{计算结果}
+\subsubsection{计算结果与分析}
 连续临界时刻为57.5685 h；60 s网格上的安全达标时刻为
 \begin{equation}
 \boxed{t_3=207300\ \mathrm{s}=\QThreeDryHours\ \mathrm{h}\approx2.40\ \mathrm{d}}.
 \end{equation}
 此时全域最大含水率为0.149984。表面在12.55 h即达到0.15，而中心需57.58 h，表明内部扩散是终点控制环节，故采用全场最大值判停。计算结果见图\ref{fig:drying}和图\ref{fig:q3_heatmaps}。
+
+\begin{longtable}{rrrrrr}
+\caption{问题3每6 h及达标时刻的水分浓度}\label{tab:q3}\\
+\toprule
+时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+\endfirsthead
+\toprule
+时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+\endhead
+6 & 1.0172 & 0.9884 & 0.9017 & 0.7550 & 0.5326 \\
+12 & 0.4564 & 0.4434 & 0.4032 & 0.3298 & 0.1640 \\
+18 & 0.2990 & 0.2917 & 0.2688 & 0.2254 & 0.0843 \\
+24 & 0.2379 & 0.2329 & 0.2168 & 0.1857 & 0.0663 \\
+30 & 0.2059 & 0.2020 & 0.1893 & 0.1642 & 0.0597 \\
+36 & 0.1860 & 0.1826 & 0.1719 & 0.1505 & 0.0565 \\
+42 & 0.1722 & 0.1692 & 0.1598 & 0.1408 & 0.0547 \\
+48 & 0.1619 & 0.1593 & 0.1508 & 0.1336 & 0.0536 \\
+54 & 0.1540 & 0.1516 & 0.1437 & 0.1278 & 0.0529 \\
+57.5833 & 0.1500 & 0.1477 & 0.1402 & 0.1250 & 0.0525 \\
+\bottomrule
+\end{longtable}
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.82\textwidth]{drying_threshold.png}
@@ -686,7 +782,7 @@ $\max C<0.15$ 的安全时刻。
 
 \subsection{问题4：收缩域下的干燥终点}
 
-\subsubsection{求解思路与联立方程}
+\subsubsection{模型建立}
 问题4采用附录4的物性函数
 \begin{equation}
 \begin{aligned}
@@ -728,25 +824,44 @@ $\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
 -\frac{k_4}{R}\frac{\partial T}{\partial\xi}=h(T_s-T_a),\qquad
 -\frac{D_4}{R}\frac{\partial C}{\partial\xi}=h_m(C_s-C_a),
 \end{equation}
-并沿用式\eqref{eq:q3_event}的终止条件。采用601个相对坐标节点，以同一有限体积--BDF流程求解；与前三问相比仅增加了收缩引起的几何输运项。
+并沿用式\eqref{eq:q3_event}的终止条件。
 
-\subsubsection{计算结果}
+\subsubsection{模型求解}
+采用601个相对坐标节点，将温度场和水分场在固定区间 $0\le\xi\le1$ 上作有限体积离散，再使用与前三问相同的BDF流程求解。计算过程中根据附件2实时更新 $R(t)$ 与 $\dot R(t)$，并计入收缩引起的几何输运项。
+
+\subsubsection{计算结果与分析}
 连续临界时刻为52.7135 h；60 s输出网格上的安全达标时刻及对应半径为
 \begin{equation}
 \boxed{t_4=189780\ \mathrm{s}=\QFourDryHours\ \mathrm{h}\approx2.20\ \mathrm{d}},
 \qquad R(t_4)=\QFourDryRadius\ \mathrm{cm}.
 \end{equation}
 此时全域最大含水率为0.149994。固定物理采样点若满足 $r_j>R(t)$，则已位于收缩后的外部空气域，按题意在表格中留空；“药材表面”列始终取 $\xi=1$ 处的值。结果见图\ref{fig:q4_heatmaps}，机理对照见第\ref{sec:mechanism_decoupling}节。
+
+\begin{table}[H]
+\centering
+\caption{问题4每6 h及达标时刻的水分浓度}\label{tab:q4}
+\begin{tabular}{rrrrrr}
+\toprule
+时间/h & 半径/cm & 0 cm & 0.5 cm & 1.0 cm & 药材表面 \\
+\midrule
+6 & 1.3740 & 1.9539 & 1.7844 & 1.2585 & 0.5678 \\
+12 & 1.2480 & 0.8748 & 0.7776 & 0.4866 & 0.2147 \\
+18 & 1.2140 & 0.4600 & 0.4136 & 0.2655 & 0.1021 \\
+24 & 1.2040 & 0.3076 & 0.2809 & 0.1904 & 0.0713 \\
+30 & 1.2010 & 0.2383 & 0.2200 & 0.1556 & 0.0609 \\
+36 & 1.2000 & 0.2002 & 0.1862 & 0.1357 & 0.0566 \\
+42 & 1.2000 & 0.1762 & 0.1648 & 0.1227 & 0.0544 \\
+48 & 1.2000 & 0.1597 & 0.1501 & 0.1136 & 0.0531 \\
+52.7167 & 1.2000 & 0.1500 & 0.1413 & 0.1081 & 0.0525 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{question4_heatmaps.png}
 \caption{问题4移动物理域温湿场时空演化热力图（白色区域为药材收缩后的外部空间）}\label{fig:q4_heatmaps}
 \end{figure}
-
-\subsection{题目规定的标准输出报表}
-将精细计算网格投影到题目规定的空间采样位置（$0\sim2\ \mathrm{cm}$，步长$0.1\ \mathrm{cm}$），所得六组结果如下；完整电子表格见支撑材料。
-\input{generated_tables.tex}
-
 
 \section{模型检验、机理探讨与拓展评价}
 
