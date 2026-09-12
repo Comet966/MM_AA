@@ -470,7 +470,7 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
 
   内界面通量相消并结合中心零通量约束后，式\eqref{eq:telescoping_sum}精确退化为：
   \begin{equation}
-  \frac{dM_h}{dt} = 2\pi F_R^C = 2\pi Rh_m(C_a - C_N) = -2\pi Rh_m(C_N - C_a).
+  \frac{dM_h}{dt} = 2\pi F_R^C = 2\pi Rh_m(C_a - C_N) = -2\pi Rh_m(C_N - C_a).\label{eq:global_conservation}
   \end{equation}
   该式从数学上严格表明：药材全场总水分的时间衰减率，精确等于外表面逸散至烘房环境的对流传质总通量，介质内部绝无任何由于数值差分近似而引起的虚假质量源或质量漏；当考虑孤立绝热闭合系统（令 $h=0, h_m=0$）时，$F_R\equiv 0$，全场总存量满足 $\frac{dM_h}{dt}\equiv 0$，数值系统在任意空间网格密度与时间尺度下均严格保持总质量守恒。这在理论上完全证明了有限体积法在线方法框架下的无损全局守恒品质。
 \end{enumerate}
@@ -478,7 +478,7 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
 \subsection{基于线方法的刚性常微分方程组求解器（自适应 BDF 与稀疏雅可比优化）}
 
 \subsubsection{稀疏雅可比矩阵模式与求解加速}
-在空间半离散化后，偏微分方程组退化为状态向量维度为 $2N$ 的大型非线性常微分方程组：$\frac{d\mathbf{y}}{dt} = \mathbf{F}(t,\mathbf{y})$。在精细网格划分下，该系统的雅可比矩阵（Jacobian Matrix）$\mathbf{J} = \frac{\partial\mathbf{F}}{\partial\mathbf{y}}$ 维度达到数千阶。若采用无差别的稠密数值求导，每次 Newton 迭代步将需要 $2N$ 次全场右端项求值，计算开销极其庞大。
+在空间半离散化后，偏微分方程组退化为状态向量维度为 $2(N+1)$ 的大型非线性常微分方程组：$\frac{d\mathbf{y}}{dt} = \mathbf{F}(t,\mathbf{y})$。在精细网格划分下，该系统的雅可比矩阵（Jacobian Matrix）$\mathbf{J} = \frac{\partial\mathbf{F}}{\partial\mathbf{y}}$ 维度达到数千阶。若采用无差别的稠密数值求导，每次 Newton 迭代步将需要 $2(N+1)$ 次全场右端项求值，计算开销极其庞大。
 
 观察控制微元物理通量结构可知，温度导数 $\dot{T}_i$ 与水分导数 $\dot{C}_i$ 仅与局部三点空间邻域 $(i-1, i, i+1)$ 的状态量以及物性耦合项直接相关。基于此，本程序严格构建了温度场与水分场双场耦合、三点紧凑空间模板的**稀疏雅可比结构模式（Jacobian Sparsity Pattern）**，以压缩稀疏行（CSR）格式存储：
 \begin{equation}
@@ -669,31 +669,19 @@ R(t) = R_j + \frac{R_{j+1}-R_j}{t_{j+1}-t_j}(t-t_j),\qquad
 \caption{问题3直至达标后0.5 h的温度场与水分场二维时空演化热力图}\label{fig:q3_heatmaps}
 \end{figure}
 
-\subsection{问题4求解与结果分析：时变收缩移动边界模型与机理对比}
-结合附录4物性参数与附件2时变收缩曲线，采用601个相对空间节点代入完整移动边界模型求解，连续理论反解临界时间为 52.7135 h；60 s 输出网格上首个严格达标时刻及终点尺寸为：
+\subsection{问题4求解与结果分析：时变收缩移动边界模型与干燥终点}
+结合附录4物性参数与附件2时变收缩曲线，采用601个相对空间节点代入完整移动边界模型求解。在求解推进过程中，模型同时计入收缩引起的几何扩散尺度压缩与相对坐标变换引入的拟对流几何输运项。
+
+连续理论反解得到的全域达标临界时间为 52.7135 h；在题目规范的 60 s 输出网格上，首个严格满足全场未经舍入最大含水率 $C < 0.15$ 的安全达标时刻与终点几何尺寸为：
 \begin{equation}
 \boxed{t_4 = 189780\ \mathrm{s} = \QFourDryHours\ \mathrm{h} \approx 2.20\ \mathrm{d}},\qquad R(t_4) = \QFourDryRadius\ \mathrm{cm}.
 \end{equation}
-此时全域最大水分浓度的原始值为 0.149994。在提取固定空间采样点 $r_j$（$0, 0.1, \dots, 2.0\text{ cm}$）时，若 $r_j > R(t)$ 表明该位置已位于药材外部，在 Excel 表格中规范留空，而“药材表面”列始终取 $\xi=1$ 的动态边界值。图\ref{fig:q4_heatmaps}展示了问题4在移动物理域上的时空全景演化，白色区域直观反映了药材边界的动态收缩。
+此时全域最大水分浓度的原始值为 0.149994（显示四位小数为 0.1500）。在提取题目规定的固定物理空间采样点 $r_j$（$0, 0.1, \dots, 2.0\text{ cm}$）时，若 $r_j > R(t)$ 表明该空间位置已处于药材收缩后的外部空气域，依据赛题规范在 Excel 表格中留空处理；而“药材表面”列始终取相对坐标 $\xi=1$ 处的动态边界物理值。
 
-为了定量解耦材料物性差异与几何收缩效应的具体贡献，设立四组对照算例进行深入对比分析（对比曲线与柱状图见图\ref{fig:shrinkage}与图\ref{fig:radius_comp}）：
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{算例 A（基准对照）}：附录3物性、固定半径 2 cm，达标时长为 \QThreeDryHours\ h；
-  \item \textbf{算例 B（物性置换）}：替换为附录4物性、保持固定半径 2 cm，达标时长大幅延长至 \AppendixFourFixedHours\ h（连续 130.01 h，增加了 \AppendixIncrease），表明附录4材料本身的扩散阻力显著大于附录3；
-  \item \textbf{算例 C（完整模型）}：附录4物性且考虑完整移动边界收缩，达标时长大幅缩短至 \QFourDryHours\ h。相对固定半径（算例 B）缩短了 77.3 h，降幅高达 \ShrinkReduction，干燥速率提升 2.47 倍！充分证明几何收缩缩短扩散距离是提升烘干效率的最关键机制；
-  \item \textbf{算例 D（输运敏感性）}：附录4物性且考虑收缩，但人为忽略几何输运项 $\xi\frac{\dot{R}}{R}\frac{\partial\phi}{\partial\xi}$，求得时长为 \NoCoordinateCaseHours\ h，比真实物理时长低估了 \OmitCoordinateDifference（约 2.98\%），定量证明该几何项直接影响四位小数精度，必须完整保留。
-\end{enumerate}
+图\ref{fig:q4_heatmaps}展示了问题4在移动物理域上的温度场与水分场二维时空全景演化热力图，白色截断区域直观清晰地刻画了药材边界随时间的动态非线性宏观收缩过程。
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.82\textwidth]{shrinkage_effect.png}
-\caption{附录4物性下固定半径（130.02 h）与动态收缩（52.72 h）的干燥历程对比}\label{fig:shrinkage}
-\end{figure}
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{radius_and_comparison.png}
-\caption{附件2药材半径实测变化曲线（左）与不同模型烘干达标时间对比柱状图（右）}\label{fig:radius_comp}
-\end{figure}
+关于材料本征物性阻力与宏观几何收缩效应的深入定量解耦、以及拟对流几何输运项的系统对照实验，详见第\ref{sec:mechanism_decoupling}节。
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{question4_heatmaps.png}
@@ -704,26 +692,13 @@ R(t) = R_j + \frac{R_{j+1}-R_j}{t_{j+1}-t_j}(t-t_j),\qquad
 依据赛题规范，将精细数值计算网格投影至题目规定的空间采样位置（$0\sim 2\text{ cm}$，步长 $0.1\text{ cm}$），自动生成的六大核心结果汇总表格如下所示；逐秒及逐分钟完整电子表格详见支撑材料。
 \input{generated_tables.tex}
 
-\subsection{数值验证与算法可行性分析}
-为全面验证数值算法的精确性、稳定性和物理自洽性，开展四项严格的独立数值检验与敏感性分析：
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{空间网格收敛性检验}：
-  随着网格加密，各问计算结果单调收敛至高精度极限。问题3将径向网格由 401 节点逐步加密至 801 节点与 1201 节点，干燥时长由 57.75 h 收敛至 57.57 h 与 57.54 h，加密相对变化仅为 \QThreeGridChange；问题4由 321 节点加密至 601 节点与 801 节点，时长稳定在 52.71 h，相对变化仅为 \QFourGridChange。具体网格测试数据详见表\ref{tab:grid}。
-  \item \textbf{时间步长独立性检验}：
-  将时间推进步长由 30 s 减半至 15 s，求得的干燥时长变化仅为 \QFourTimeChange（万分之一量级），表明计算步长已完全处于数值稳定收敛平台区。
-  \item \textbf{封闭系统水分质量守恒检验}：
-  设置绝热且绝湿边界（$h = h_m = 0$），自强非均匀含水率初值自主扩散演化 1 h。全场总水分加权积分的相对变化误差仅为 \ConservationError，严格达到计算机机器浮点精度级别，从数值层面完满印证了内界面通量对消的严格守恒特性。
-  \item \textbf{均匀热湿平衡态自洽性检验}：
-  令初始内部场与恒定外部环境完全一致（无驱动力）。数值求解 600 s 后，全场最大绝对偏差仅为 \EquilibriumError，严密验证了界面边界条件赋值与离散格式的准确性。
-  \item \textbf{关键模型参数局部敏感性分析}：
-  运行支撑材料中的 \texttt{sensitivity\_analysis.py}，对换热系数 $h$、传质系数 $h_m$ 及有效扩散系数 $D$ 分别施加 $\pm 10\%$ 的独立参数摄动：
-  \begin{itemize}
-    \item 换热系数 $h$ 改变 $\pm 10\%$，问题三与问题四达标时间变化均不足 $0.02\%$，表明在传热快速接近平衡后，外界换热系数对中后期干燥脱水进程影响极微；
-    \item 传质系数 $h_m$ 改变 $\pm 10\%$，问题三达标时间变化约 $+1.26\% / -0.99\%$，问题四变化约 $+0.59\% / -0.45\%$；
-    \item 扩散系数 $D$ 改变 $\pm 10\%$，问题三达标时间剧烈变化 $+9.86\% / -8.03\%$，问题四变化 $+9.65\% / -7.88\%$。
-  \end{itemize}
-  上述定量敏感性分析深刻揭示：\textbf{内部水分扩散是决定整个烘干进程快慢的绝对控速步骤（Rate-Limiting Step）}，这不仅从理论上解释了为何附录4较大扩散阻力会导致干燥时间成倍激增，更强力证实了本模型捕捉物理主导机理的高度科学性与数值鲁棒性。
-\end{enumerate}
+\section{模型检验、机理探讨与拓展评价}
+
+\subsection{数值算法可靠性与自洽性验证}
+为全面验证所建立的线方法有限体积格式与自适应 BDF 求解器的精确性、稳定性与物理自洽性，开展四项严格的独立数值检验：
+
+\subsubsection{空间网格收敛性检验}
+随着径向网格的逐步加密，各问计算结果单调收敛至高精度数值极限。问题3将径向网格由 401 节点逐步加密至 801 节点与 1201 节点，干燥时长由 57.75 h 收敛至 57.57 h 与 57.54 h，加密相对变化仅为 \QThreeGridChange；问题4由 321 节点加密至 601 节点与 801 节点，时长高度稳定在 52.71 h，相对变化仅为 \QFourGridChange。具体网格测试数据汇总于表\ref{tab:grid}，充分证明正式计算所选取的网格密度已完全处于渐近网格无关区。
 
 \begin{table}[H]
 \centering
@@ -740,32 +715,88 @@ R(t) = R_j + \frac{R_{j+1}-R_j}{t_{j+1}-t_j}(t-t_j),\qquad
 \end{tabular}
 \end{table}
 
-\section{模型总结}
-\subsection{主要结论}
-一维圆柱径向热质耦合模型能够统一处理四个问题。问题3的全域达标时间为 \QThreeDryHours\ h，问题4完整移动边界模型为 \QFourDryHours\ h。收缩把附录4固定半径情况下的 \AppendixFourFixedHours\ h 显著降至约 52.72 h（缩短了 77.3 h，提速 2.47 倍），说明扩散距离是决定烘干效率的关键几何因素。全过程均由中心最后达到含水率阈值。
+\subsubsection{时间步长独立性检验}
+将时间积分推进的最大允许步长由 30 s 进一步减半至 15 s，求得的干燥达标时长相对变化仅为 \QFourTimeChange（万分之一量级），表明算法的局部截断误差控制机制有效运转，计算结果完全独立于人为指定的时间推进步长。
 
-\subsection{模型优点}
-\begin{enumerate}
-  \item 四问共享同一热质传递框架，仅替换物性、半径模型和终止事件。
-  \item 离散符号与物理坐标一致：半节点区间的守恒积分同时自然处理圆心零通量、Robin边界和内通量完全对消。
-  \item 求解器基于工业级自适应 BDF 与稀疏雅可比矩阵优化，兼顾超强数值稳定性与秒级极速推进能力。
-  \item 移动边界同时保留 $R^{-2}$ 缩放与 $\xi\dot R/R$ 拟对流输运项，并定量评估了遗漏几何项的影响。
+\subsubsection{封闭系统水分质量守恒数值检验}
+为检验数值离散对物理守恒律的保真度，设定绝热且绝湿边界（$h = 0, h_m = 0$），自强非均匀含水率初值自主扩散演化 1 h。根据式\eqref{eq:global_conservation}计算全场总水分加权积分的时间相对变化误差，实测相对变化误差仅为 \ConservationError，严格达到计算机双精度机器浮点下溢极限（$\sim 10^{-15}$），从数值计算层面完满证实了内界面通量对消的严格守恒特性。
+
+\subsubsection{均匀热湿平衡态自洽性检验}
+设定初始内部场与恒定外部环境完全相同（即系统无任何驱动势差）。数值求解推进 600 s 后，全场温度与水分的最大绝对偏差仅为 \EquilibriumError，严密验证了界面边界条件离散、源项匹配与雅可比线性化格式的绝对自洽性，无任何非物理虚假流动。
+
+\subsection{烘干主导控速机理与参数敏感性分析}
+运行支撑材料中的参数敏感性分析模块（\texttt{sensitivity\_analysis.py}），针对影响干燥动力学的三个核心外界与物性参数——换热系数 $h$、传质系数 $h_m$ 及有效扩散系数 $D$ 分别施加 $\pm 10\%$ 的独立局部摄动：
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{对流换热系数 $h$}：改变 $\pm 10\%$，问题三与问题四达标时间变化均不足 $0.02\%$。这是因为药材导热响应极快（数十分钟内即趋于近均匀），在漫长的中后期恒温脱水干燥阶段，外部传热能力已完全充裕，换热强弱不再制约干燥进程；
+  \item \textbf{表面对流传质系数 $h_m$}：改变 $\pm 10\%$，问题三达标时间变化约 $+1.26\% / -0.99\%$，问题四变化约 $+0.59\% / -0.45\%$，表现为较弱的次要影响；
+  \item \textbf{内部有效水分扩散系数 $D$}：改变 $\pm 10\%$，问题三达标时间剧烈变化 $+9.86\% / -8.03\%$，问题四达标时间剧烈变化 $+9.65\% / -7.88\%$，呈现出近乎一阶正比例的极端敏感性。
+\end{enumerate}
+上述定量敏感性分析深刻揭示：\textbf{内部水分向外迁移的扩散阻力是制约整个烘干过程完成快慢的绝对控速步骤（Rate-Limiting Step）}。这一结论不仅在物理机理上完美解释了为何附录4材料本征扩散系数的微弱降低会导致干燥时长成倍激增，更强力证实了烘干工业界“强化内部传质驱动力比盲目提高热风风速更为有效”的核心工艺常识。
+
+\subsection{几何收缩机制解耦与拟对流输运拓展讨论}\label{sec:mechanism_decoupling}
+在问题4中，烘干进程受到“材料物性改变（附录3 $\to$ 附录4）”与“宏观半径收缩（固定 2 cm $\to$ 动态收缩）”的双重耦合影响。为清晰辨识各自的物理贡献，设立四组对照算例开展解耦分析（见图\ref{fig:shrinkage}与图\ref{fig:radius_comp}）：
+
+\subsubsection{材料本征阻力与几何收缩效应的解耦对照}
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{算例 A（基准问题3）}：采用附录3物性、固定半径 2 cm，达标时长为 \QThreeDryHours\ h；
+  \item \textbf{算例 B（物性置换对照）}：采用附录4物性、保持固定半径 2 cm，达标时长大幅延长至 \AppendixFourFixedHours\ h（增加 \AppendixIncrease，即长达 5.42 天！）。这清晰表明附录4所表征的多孔材料其内部孔隙扩散阻力远高于附录3；
+  \item \textbf{算例 C（问题4完整收缩）}：采用附录4物性且计入实测动态收缩，达标时长大幅削减至 \QFourDryHours\ h。相对固定半径（算例 B）缩短了 77.3 h，降幅高达 \ShrinkReduction，干燥整体速率提升了 2.47 倍！
+\end{enumerate}
+算例 B 与算例 C 的剧烈反差雄辩地证明：\textbf{几何收缩显著缩短了物料内部水分向表面析出的特征扩散距离（$\tau \propto R^2$），是抵消材料本征大扩散阻力、加速干燥完成的最关键机制}。若在烘干建模中忽略物料收缩，将会产生高达数天的严重虚假滞后误差。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth]{shrinkage_effect.png}
+\caption{附录4物性下固定半径（130.02 h）与动态收缩（52.72 h）的干燥历程对比}\label{fig:shrinkage}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{radius_and_comparison.png}
+\caption{附件2药材半径实测变化曲线（左）与不同模型烘干达标时间对比柱状图（右）}\label{fig:radius_comp}
+\end{figure}
+
+\subsubsection{坐标变换拟对流输运项的必要性与影响评估}
+为评估将物理移动域映射至固定相对坐标时所产生的拟对流几何输运项 $\xi\frac{\dot{R}}{R}\frac{\partial\phi}{\partial\xi}$ 对计算精度的影响，设立敏感性对照算例：
+\begin{itemize}
+  \item \textbf{算例 D（输运项敏感性对照）}：采用附录4物性与附件2收缩，但在控制方程中人为略去该几何输运项（仅保留 $R^{-2}(t)$ 尺度缩放）。
+\end{itemize}
+计算表明，算例 D 的达标时长为 \NoCoordinateCaseHours\ h，相较完整模型（52.72 h）低估了 \OmitCoordinateDifference（约 2.98\%，绝对偏差达 1.57 h）。这定量证明：尽管该几何项不改变干燥总时长处于“约2.2天”的大数量级，但它对精确满足赛题四位小数精度要求具有决定性影响，在严谨的移动边界连续介质力学模拟中不可随意舍去。
+
+\subsection{模型优缺点评价与改进展望}
+\subsubsection{模型主要优点}
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{框架高度统一且复用性强}：四问严格共享同一套基于广义守恒变量的空间半离散线方法体系，仅需切换对应的物性函数与边界条件，算法架构整洁优美；
+  \item \textbf{严格保持局部与全局守恒性}：空间离散采用几何柱面加权的顶点中心有限体积法，内部界面通量形成严格的望远镜级数对消，机器浮点精度级别满足质量与能量守恒；
+  \item \textbf{超刚性方程的高效极速求解}：引入两场三点紧凑模式的稀疏雅可比矩阵优化（CSR），配合自适应高阶 BDF 隐式积分推进，在保证绝对数值稳定性的前提下，实现长达 72 h 跨度物理全过程的秒级极速求解；
+  \item \textbf{移动边界处理兼备严格性与实用性}：通过 Landau 相对坐标归一化彻底规避了动网格重划分的插值误差，完整保留了几何收缩双重机制，并构建了连续事件与 60 s 输出网格双重达标判定体系。
 \end{enumerate}
 
-\subsection{局限与改进}
-模型未显式描述蒸发潜热、表面平衡含水率、轴向传递和长度收缩；问题2--4的 $h,h_m$ 只能沿用题目给定值。附件2提供的是半径历史而非收缩本构，因此问题4属于实测几何驱动模型。若获得独立实验曲线，可进一步反演 $h_m$ 和平衡含水率关系，建立 $R(C)$ 收缩本构，并用守恒型任意拉格朗日--欧拉格式及二维轴对称模型复核几何项与端部效应。
+\subsubsection{局限性与工业优化改进方向}
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{相变潜热与热湿焓耦合效应未显式刻画}：模型将水分相变蒸发潜热并入了等效比热容与传热经验参数中，未来可进一步建立包含气--液--固三相平衡的非平衡态升华与汽化能量方程；
+  \item \textbf{几何收缩本构关系有待内生化}：当前问题4基于实测几何数据驱动 $R(t)$。若能获得材料力学实验数据，可建立应力--应变与含水率直接关联的收缩本构方程 $R(C)$，实现热--质--固力学全耦合求解；
+  \item \textbf{二维轴对称与端部效应深化}：对于长径比较小的短柱药材，两端面的吸热与排湿不可忽视，可进一步拓展至 $(r,z)$ 二维有限体积求解器。
+\end{enumerate}
 
-\subsection{支撑文件与复现说明}
+\subsection{结论与支撑材料复现说明}
+\subsubsection{主要研究结论}
+\begin{enumerate}[label=(\arabic*)]
+  \item 烘干初期温度场在 30 min 内迅速建立并在 3 h 内高度接近热平衡，而水分场的迁移具有显著的时间滞后性，全过程由中心最晚达到阈值；
+  \item 问题3固定半径下的全域烘干达标时刻为 \QThreeDryHours\ h（约 2.40 d）；问题4在附录4物性与动态收缩下的达标时刻为 \QFourDryHours\ h（约 2.20 d），终点尺寸为 \QFourDryRadius\ cm；
+  \item 几何收缩是克服材料内部大扩散阻力的最关键驱动机制，能使干燥整体提速达 2.47 倍。
+\end{enumerate}
+
+\subsubsection{支撑材料组织与一键复现指南}
 本研究交付的支撑材料采用模块化、轻量级与全流程一键复现架构，代码结构与文件组织如下：
 \begin{enumerate}[label=(\arabic*)]
-  \item \textbf{核心计算与绘图程序（\texttt{solve.py}）}：基于线方法有限体积空间半离散化与 SciPy 刚性自适应 BDF 求解器，统一求解赛题四问，并在高精度事件求根后自动将结果写回附件3规范 Excel 工作簿（\texttt{result1.xlsx}--\texttt{result4.xlsx}），同步生成论文全套高清图件及指标摘要文件（\texttt{计算结果/summary.json}）；
-  \item \textbf{参数敏感性分析程序（\texttt{sensitivity\_analysis.py}）}：针对换热系数、传质系数及有效扩散系数开展 $\pm 10\%$ 独立摄动实验，输出参数敏感性报告（保存于 \texttt{parameter\_sensitivity.json}）；
-  \item \textbf{依赖与环境说明（\texttt{requirements.txt} 及 \texttt{支撑材料文件说明.md}）}：运行依赖仅需 NumPy、SciPy、openpyxl 与 Matplotlib。在支撑材料根目录下只需运行命令：
+  \item \textbf{一键复现主入口（\texttt{run\_all.py}）}：依次自动调用核心求解器驱动四问计算、输出标准 Excel 工作簿（\texttt{result1.xlsx}--\texttt{result4.xlsx}）、执行敏感性分析并完成全套数据指标校验；
+  \item \textbf{核心算法求解模块（\texttt{src/drying\_solver.py}）}：基于有限体积线方法与 SciPy 刚性 BDF 求解器实现全过程数值积分、稀疏雅可比模式构建、事件检测与图件渲染；
+  \item \textbf{参数敏感性分析模块（\texttt{src/sensitivity\_analysis.py}）}：独立开展 $\pm 10\%$ 参数摄动实验并输出结构化指标；
+  \item \textbf{依赖环境与运行}：依赖包仅需 NumPy、SciPy、openpyxl、Pandas 与 Matplotlib。在支撑材料目录下仅需运行命令：
   \begin{verbatim}
-  python solve.py
-  python sensitivity_analysis.py
+  python run_all.py
   \end{verbatim}
-  即可全自动、无损且确定性地完全复现论文中的所有数值解、图表与数据指标。
+  即可在 1--2 分钟内确定性、无损地全自动复现论文中的全部数值解、图表与 Excel 结果。
 \end{enumerate}
 
 \begin{thebibliography}{9}
