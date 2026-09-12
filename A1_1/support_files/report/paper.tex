@@ -330,46 +330,45 @@ z = z.
 \subsection{柱坐标扩散方程的简化}
 式\eqref{eq:cyl_heat}与式\eqref{eq:cyl_mass}给出了柱坐标下的热质耦合方程。现在要对其进行近似简化，理由如下：
 \begin{enumerate}[label=(\arabic*)]
-  \item \textbf{周向均匀性与旋转对称性证据}：
-  药材外观呈规则圆柱体，关于中心旋转轴具备严格的几何旋转对称性。烘房内热风流动平稳且均匀掠过圆柱周向外表面，环境温度 $T_a(t)$、环境水分浓度 $C_a(t)$ 以及表面对流换热与传质系数 $h, h_m$ 均不依赖于周向角 $\theta$。同时，烘干初始时刻药材内部温度（$28^\circ\text{C}$）与含水率（$2.55\text{ kg/kg}$）在全截面上均匀分布，不存在周向驱动力或扰动。因此，温度场和水分场满足周向各向同性，即 $\frac{\partial T}{\partial\theta}=0$、$\frac{\partial C}{\partial\theta}=0$。
+  \item \textbf{旋转对称性}：
+  已经假设药材外观呈规则圆柱体，并且质地均匀，具备严格的几何旋转对称性，以及烘房内热风流动平稳且均匀掠过圆柱外表面。环境温度 $T_a(t)$、环境水分浓度 $C_a(t)$ 以及表面对流换热与传质系数 $h, h_m$ 均不依赖于周向角 $\theta$。因此，温度场和水分场满足周向各向同性，即 $\frac{\partial T}{\partial\theta}=0$、$\frac{\partial C}{\partial\theta}=0$。
 
-  \item \textbf{大长径比与大面积比几何证据}：
-  药材实测几何尺寸为长度 $L=25\text{ cm}$，初始半径 $R_0=2\text{ cm}$（直径 $2R_0=4\text{ cm}$），长径比为 $L/(2R_0)=6.25\gg1$。圆柱周向侧面积为 $A_{\text{side}}=2\pi R_0 L=100\pi\text{ cm}^2$，而两端截面积之和仅为 $2A_{\text{end}}=2\pi R_0^2=8\pi\text{ cm}^2$。侧面积与端面积之比高达 $A_{\text{side}}/(2A_{\text{end}})=L/R_0=12.5$，这意味着超过 $92.6\%$ 的热量吸收与水分蒸发均由周向侧表面承担，两端面通量占比极低，端部效应仅局限在两端极小的局部区域。
+  \item \textbf{大长径比与大面积比}：
+  药材实测几何尺寸为长度 $L=25\text{ cm}$，初始半径 $R_0=2\text{ cm}$（直径 $2R_0=4\text{ cm}$），长径比为 $L/(2R_0)=6.25\gg1$。圆柱周向侧面积为 $A_{\text{side}}=2\pi R_0 L$，而两端截面积之和仅为 $2A_{\text{end}}=2\pi R_0^2$。侧面积与端面积之比高达 $A_{\text{side}}/(2A_{\text{end}})=L/R_0=12.5$，这意味着超过 $92.6\%$ 的热量吸收与水分蒸发由侧表面承担，两端面通量占比极低，端部效应仅局限在极小的区域。
 
-  \item \textbf{特征传递尺度与时间尺度证据}：
-  热量由外周传入中心、水分由中心析出至外表面的径向特征尺度仅为半径 $R_0=2\text{ cm}$；而沿轴向自两端向中心传递的特征距离为半长 $L/2=12.5\text{ cm}$。由非定常扩散的特征时间尺度准则 $\tau \sim l^2/D_{\text{eff}}$ 可知，轴向传递特征时间与径向传递特征时间之比为 $\tau_z/\tau_r \approx (L/2R_0)^2 = 6.25^2 \approx 39$ 倍。这表明径向传递的动态响应速度远高于轴向，整个烘干过程中径向热质扩散占据绝对主导地位。
+  \item \textbf{特征传递尺度与时间尺度}：
+  热量由外周传入中心、水分的径向特征距离仅为半径 $R_0=2\text{ cm}$；而沿轴向传递的特征距离为半长 $L/2=12.5\text{ cm}$。由扩散的特征时间尺度准则 $\tau \sim l^2/D_{\text{eff}}$ 可知，轴向传递与径向传递特征时间之比为 $\tau_z/\tau_r \approx (L/2R_0)^2 = 6.25^2 \approx 39$ 倍。表明径向传递的速度远高于轴向，整个烘干过程中径向热质扩散占据绝对主导。
 
-  \item \textbf{Biot数准则与径向梯度存在性证据}：
-  为判别药材内部阻力与外表面对流阻力的相对强弱，分别计算热传导与水分扩散的 Biot 数准则：
+  \item \textbf{Biot数准则}：
+  分别计算热传导与水分扩散的 Biot 数：
   \begin{align}
   Bi_T &= \frac{h R_0}{k} \approx \frac{25 \times 0.02}{0.36} \approx 1.39 > 0.1,\label{eq:biot_t}\\
   Bi_m &= \frac{h_m R_0}{D} \approx \frac{8.0\times 10^{-7} \times 0.02}{10^{-9}} \sim 16 \gg 0.1.\label{eq:biot_m}
   \end{align}
-  在传热学与传质学准则中，当 $Bi > 0.1$ 时，介质内部的导热阻力与水分扩散阻力不可忽略，系统不能视为均质简化的集总参数模型，药材内部必定长期维持显著的径向温度梯度与水分梯度（即 $\frac{\partial T}{\partial r}\neq0$、$\frac{\partial C}{\partial r}\neq0$），因而必须完整保留径向分布参数控制方程。
+  在传热学与传质学准则中，当 $Bi > 0.1$ 时，介质内部的导热阻力与水分扩散阻力不可忽略，系统不能视为均质简化的集总参数模型，药材内部必定长期维持显著的径向温度梯度与水分梯度，即 $\frac{\partial T}{\partial r}\neq0$、$\frac{\partial C}{\partial r}\neq0$。
 \end{enumerate}
 
 \paragraph{小结}
-综合上述四条物理与几何证据，可以确立三维柱坐标传递方程降维至一维径向模型的关键梯度判定准则，将其单列如下：
+依据上述四条证据，可以将三维柱坐标方程降维为一维，将证据单列如下：
 \begin{enumerate}[label=(\arabic*)]
-  \item \textbf{周向旋转对称性严格消除角向导数}：
+  \item \textbf{旋转对称性}：
   \begin{equation}
   \frac{\partial T}{\partial\theta} = 0,\qquad \frac{\partial C}{\partial\theta} = 0.\label{eq:theta_zero}
   \end{equation}
-  \item \textbf{大长径比与大面积比消除轴向导数}：
+  \item \textbf{大长径比与大面积比}：
   \begin{equation}
   \left|\frac{\partial T}{\partial z}\right|\ll\left|\frac{\partial T}{\partial r}\right| \implies \frac{\partial T}{\partial z} \approx 0,\qquad
   \left|\frac{\partial C}{\partial z}\right|\ll\left|\frac{\partial C}{\partial r}\right| \implies \frac{\partial C}{\partial z} \approx 0.\label{eq:z_zero}
   \end{equation}
-  \item \textbf{Biot数准则证实径向梯度持续显著}：
+  \item \textbf{Biot数}：
   \begin{equation}
   Bi_T > 0.1 \implies \frac{\partial T}{\partial r} \neq 0,\qquad
   Bi_m \gg 0.1 \implies \frac{\partial C}{\partial r} \neq 0.\label{eq:r_nonzero}
   \end{equation}
 \end{enumerate}
-由此可知：由式\eqref{eq:theta_zero}，控制方程中的周向导数项 $\frac{\partial}{\partial\theta}(\dots)$ 严格消失；由式\eqref{eq:z_zero}，轴向二阶传导与扩散项 $\frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right)$ 和 $\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right)$ 可以安全忽略；由式\eqref{eq:r_nonzero}，径向梯度始终主导着整个非定常烘干进程，必须完整保留分布参数形式。
 
 \paragraph{简化后的扩散方程}
-综上推导与判据，三维柱坐标控制方程\eqref{eq:cyl_heat}与\eqref{eq:cyl_mass}严格退化为一维径向非线性热质耦合偏微分方程组。问题1--3在固定物理半径 $0\le r\le R$ 上满足：
+于是，三维柱坐标控制方程\eqref{eq:cyl_heat}与\eqref{eq:cyl_mass}严格退化为一维径向非线性热质耦合方程。问题1--3在固定物理半径 $0\le r\le R$ 上满足：
 \begin{align}
 \rho(C)c_p(C)\frac{\partial T}{\partial t}
 &=\frac1r\frac{\partial}{\partial r}\left(rk(C)\frac{\partial T}{\partial r}\right),\label{eq:heat}\\[10pt]
@@ -378,26 +377,26 @@ z = z.
 \end{align}
 
 \subsection{边界条件}
-为了使上述一维径向偏微分方程组构成数学上适定且物理闭合的初边值问题，须在空间内部中心与外部表面施加对应的边界定解条件：
+为了求解这个偏微分方程，还需要确定几组边界条件：
 \begin{enumerate}[label=(\arabic*)]
-  \item \textbf{圆柱中心对称条件与奇点处理}：
-  在药材中心轴线 $r=0$ 处，由于药材几何与烘干工况具备严格的中心对称性，温度场与水分场关于轴心线呈镜像对称分布，径向梯度必恒等于零：
+  \item \textbf{圆柱中心对称条件}：
+  在药材中心轴线 $r=0$ 处，由于具备中心对称性，温度场与水分场关于轴心线呈镜像对称，于是径向梯度必恒等于零：
   \begin{equation}
   \left.\frac{\partial T}{\partial r}\right|_{r=0} = 0,\qquad \left.\frac{\partial C}{\partial r}\right|_{r=0} = 0.\label{eq:centerbc}
   \end{equation}
-  针对控制方程右端几何因子 $\frac{1}{r}$ 在中心 $r=0$ 处引起的表面几何奇点，在连续性理论上，由 L'Hôpital 法则可知 $\lim_{r\to 0}\frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right) = 2\Gamma\left.\frac{\partial^2\phi}{\partial r^2}\right|_{r=0}$，物理量在中心处二阶导数有限且光滑；而在有限体积法中，中心控制体在 $r=0$ 处的界面面积恒为零，界面热质通量自然消失，数值离散可天然规避 $1/r$ 奇点，无需进行奇异项除法。
+  针对方程右端几何因子 $\frac{1}{r}$ 在中心 $r=0$ 处引起的表面几何奇点，在连续性理论上，由 L'Hôpital 法则可知 $\lim_{r\to 0}\frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right) = 2\Gamma\left.\frac{\partial^2\phi}{\partial r^2}\right|_{r=0}$，物理量在中心处二阶导数有限且光滑；而在有限体积法中，中心控制体在 $r=0$ 处的界面面积恒为零，界面热质通量自然消失，数值离散可天然规避 $1/r$ 奇点，无需进行奇异项除法。
 
-  \item \textbf{外表面 Robin 对流换热与对流传质条件}：
-  在药材与烘房热风充分接触的外周表面 $r=R$ 处，热量与水分的交换遵循界面通量守恒原理。药材内部由内向外输运的热通量与水分通量，严格等于表面向外部流体环境对流换热与对流蒸发传质的净通量，分别服从 Newton 冷却定律与表面对流传质定律：
+  \item \textbf{外表面 Robin 传热与传质条件}：
+  在药材与烘房热风接触的侧表面 $r=R$ 处，传热与传质遵循界面通量守恒原理。药材由内向外的热通量与水分通量，等于表面向外部环境对流换热与对流蒸发传质的净通量，分别服从 Newton 冷却定律与表面对流传质定律：
   \begin{align}
   -k(C_s)\left.\frac{\partial T}{\partial r}\right|_{r=R} &= h\left[T(R,t)-T_a(t)\right],\label{eq:robin_t}\\[8pt]
   -D(C_s,T_s)\left.\frac{\partial C}{\partial r}\right|_{r=R} &= h_m\left[C(R,t)-C_a(t)\right],\label{eq:robin_m}
   \end{align}
-  其中 $T_s = T(R,t)$ 与 $C_s = C(R,t)$ 分别表示药材外表面处的绝对温度与干基含水率，$T_a(t)$ 与 $C_a(t)$ 分别为由附件1测定并给出的时变烘房空气温度与水分浓度。
+  其中 $T_s = T(R,t)$ 与 $C_s = C(R,t)$ 分别表示药材外表面的温度与干基含水率，$T_a(t)$ 与 $C_a(t)$ 分别为由附件1给出的时变烘房空气温度与水分浓度。
 \end{enumerate}
 
 \paragraph{总结}
-综合简化后的扩散方程与内外部边界定解条件，问题1--3在固定物理半径 $0\le r\le R$ 下构成的完整闭合热质耦合方程组可统一使用大括号联立表示为：
+综合简化后的扩散方程与边界定解条件，问题1--3在 $0\le r\le R$ 下构成的热质耦合方程组可统一表示为：
 \begin{equation}
 \begin{cases}
 \rho(C)c_p(C)\dfrac{\partial T}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rk(C)\dfrac{\partial T}{\partial r}\right),\\[12pt]
@@ -407,7 +406,7 @@ z = z.
 -D(C_s,T_s)\left.\dfrac{\partial C}{\partial r}\right|_{r=R} = h_m\left[C(R,t)-C_a(t)\right].
 \end{cases}\label{eq:coupled_system}
 \end{equation}
-针对具体求解，将式\eqref{eq:coupled_system}分别与各问对应附录中的物性参数联立即可：问题1联立附录2对应物性，问题2与问题3联立附录3对应物性，问题4则结合附录4对应物性与后述时变移动边界模型求解。
+针对具体求解，将式\eqref{eq:coupled_system}分别与各问对应附录中的物性参数联立即可。
 
 \section{问题求解}
 
