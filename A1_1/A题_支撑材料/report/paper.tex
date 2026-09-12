@@ -274,18 +274,14 @@ z = z.
 综合简化后的扩散方程与内外部边界定解条件，问题1--3在固定物理半径 $0\le r\le R$ 下构成的完整闭合热质耦合方程组可统一使用大括号联立表示为：
 \begin{equation}
 \begin{cases}
-\rho(C)c_p(C)\dfrac{\partial T}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rk(C)\dfrac{\partial T}{\partial r}\right), & 0 < r < R,\; t > 0,\\[12pt]
-\dfrac{\partial C}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rD(C,T)\dfrac{\partial C}{\partial r}\right), & 0 < r < R,\; t > 0,\\[12pt]
-\left.\dfrac{\partial T}{\partial r}\right|_{r=0} = 0,\quad \left.\dfrac{\partial C}{\partial r}\right|_{r=0} = 0, & t \ge 0 \quad (\text{中心对称与奇点消除}),\\[12pt]
--k(C_s)\left.\dfrac{\partial T}{\partial r}\right|_{r=R} = h\left[T(R,t)-T_a(t)\right], & t > 0 \quad (\text{表面对流换热}),\\[12pt]
--D(C_s,T_s)\left.\dfrac{\partial C}{\partial r}\right|_{r=R} = h_m\left[C(R,t)-C_a(t)\right], & t > 0 \quad (\text{表面对流传质}).
+\rho(C)c_p(C)\dfrac{\partial T}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rk(C)\dfrac{\partial T}{\partial r}\right),\\[12pt]
+\dfrac{\partial C}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rD(C,T)\dfrac{\partial C}{\partial r}\right),\\[12pt]
+\left.\dfrac{\partial T}{\partial r}\right|_{r=0} = 0,\quad \left.\dfrac{\partial C}{\partial r}\right|_{r=0} = 0,\\[12pt]
+-k(C_s)\left.\dfrac{\partial T}{\partial r}\right|_{r=R} = h\left[T(R,t)-T_a(t)\right],\\[12pt]
+-D(C_s,T_s)\left.\dfrac{\partial C}{\partial r}\right|_{r=R} = h_m\left[C(R,t)-C_a(t)\right].
 \end{cases}\label{eq:coupled_system}
 \end{equation}
-问题1采用常数 $\rho=820$、$c_p=2600$、$k=0.36$ 和
-\[
-D=7\times10^{-9}\exp(-0.89/C).
-\]
-问题2、3使用附录3经验式，问题4使用附录4经验式。程序内部温度统一用K；仅在计算指数式时令 $C\ge10^{-8}$ 防止非线性迭代的极端中间值除零，正式结果远离该下限。
+针对具体求解，将式\eqref{eq:coupled_system}分别与各问对应附录中的物性参数联立即可：问题1联立附录2对应物性，问题2与问题3联立附录3对应物性，问题4则结合附录4对应物性与后述时变移动边界模型求解。
 
 \subsection{问题4的相对坐标模型}
 定义
