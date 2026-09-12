@@ -242,6 +242,7 @@ z = z.
 \end{enumerate}
 由此可知：由式\eqref{eq:theta_zero}，控制方程中的周向导数项 $\frac{\partial}{\partial\theta}(\dots)$ 严格消失；由式\eqref{eq:z_zero}，轴向二阶传导与扩散项 $\frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right)$ 和 $\frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right)$ 可以安全忽略；由式\eqref{eq:r_nonzero}，径向梯度始终主导着整个非定常烘干进程，必须完整保留分布参数形式。
 
+\paragraph{简化后的扩散方程}
 综上推导与判据，三维柱坐标控制方程\eqref{eq:cyl_heat}与\eqref{eq:cyl_mass}严格退化为一维径向非线性热质耦合偏微分方程组。问题1--3在固定物理半径 $0\le r\le R$ 上满足：
 \begin{align}
 \rho(C)c_p(C)\frac{\partial T}{\partial t}
@@ -249,11 +250,37 @@ z = z.
 \frac{\partial C}{\partial t}
 &=\frac1r\frac{\partial}{\partial r}\left(rD(C,T)\frac{\partial C}{\partial r}\right).\label{eq:mass}
 \end{align}
-中心对称条件与表面Robin条件为
-\begin{gather}
-T_r(0,t)=0,\qquad C_r(0,t)=0,\label{eq:centerbc}\\
--kT_r(R,t)=h(T_s-T_a),\qquad -DC_r(R,t)=h_m(C_s-C_a).\label{eq:robin}
-\end{gather}
+
+\subsubsection{边界条件}
+为了使上述一维径向偏微分方程组构成数学上适定且物理闭合的初边值问题，须在空间内部中心与外部表面施加对应的边界定解条件：
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{圆柱中心对称条件与奇点处理}：
+  在药材中心轴线 $r=0$ 处，由于药材几何与烘干工况具备严格的中心对称性，温度场与水分场关于轴心线呈镜像对称分布，径向梯度必恒等于零：
+  \begin{equation}
+  \left.\frac{\partial T}{\partial r}\right|_{r=0} = 0,\qquad \left.\frac{\partial C}{\partial r}\right|_{r=0} = 0.\label{eq:centerbc}
+  \end{equation}
+  针对控制方程右端几何因子 $\frac{1}{r}$ 在中心 $r=0$ 处引起的表面几何奇点，在连续性理论上，由 L'Hôpital 法则可知 $\lim_{r\to 0}\frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right) = 2\Gamma\left.\frac{\partial^2\phi}{\partial r^2}\right|_{r=0}$，物理量在中心处二阶导数有限且光滑；而在有限体积法中，中心控制体在 $r=0$ 处的界面面积恒为零，界面热质通量自然消失，数值离散可天然规避 $1/r$ 奇点，无需进行奇异项除法。
+
+  \item \textbf{外表面 Robin 对流换热与对流传质条件}：
+  在药材与烘房热风充分接触的外周表面 $r=R$ 处，热量与水分的交换遵循界面通量守恒原理。药材内部由内向外输运的热通量与水分通量，严格等于表面向外部流体环境对流换热与对流蒸发传质的净通量，分别服从 Newton 冷却定律与表面对流传质定律：
+  \begin{align}
+  -k(C_s)\left.\frac{\partial T}{\partial r}\right|_{r=R} &= h\left[T(R,t)-T_a(t)\right],\label{eq:robin_t}\\[8pt]
+  -D(C_s,T_s)\left.\frac{\partial C}{\partial r}\right|_{r=R} &= h_m\left[C(R,t)-C_a(t)\right],\label{eq:robin_m}
+  \end{align}
+  其中 $T_s = T(R,t)$ 与 $C_s = C(R,t)$ 分别表示药材外表面处的绝对温度与干基含水率，$T_a(t)$ 与 $C_a(t)$ 分别为由附件1测定并给出的时变烘房空气温度与水分浓度。
+\end{enumerate}
+
+\paragraph{总结}
+综合简化后的扩散方程与内外部边界定解条件，问题1--3在固定物理半径 $0\le r\le R$ 下构成的完整闭合热质耦合方程组可统一使用大括号联立表示为：
+\begin{equation}
+\begin{cases}
+\rho(C)c_p(C)\dfrac{\partial T}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rk(C)\dfrac{\partial T}{\partial r}\right), & 0 < r < R,\; t > 0,\\[12pt]
+\dfrac{\partial C}{\partial t} = \dfrac{1}{r}\dfrac{\partial}{\partial r}\left(rD(C,T)\dfrac{\partial C}{\partial r}\right), & 0 < r < R,\; t > 0,\\[12pt]
+\left.\dfrac{\partial T}{\partial r}\right|_{r=0} = 0,\quad \left.\dfrac{\partial C}{\partial r}\right|_{r=0} = 0, & t \ge 0 \quad (\text{中心对称与奇点消除}),\\[12pt]
+-k(C_s)\left.\dfrac{\partial T}{\partial r}\right|_{r=R} = h\left[T(R,t)-T_a(t)\right], & t > 0 \quad (\text{表面对流换热}),\\[12pt]
+-D(C_s,T_s)\left.\dfrac{\partial C}{\partial r}\right|_{r=R} = h_m\left[C(R,t)-C_a(t)\right], & t > 0 \quad (\text{表面对流传质}).
+\end{cases}\label{eq:coupled_system}
+\end{equation}
 问题1采用常数 $\rho=820$、$c_p=2600$、$k=0.36$ 和
 \[
 D=7\times10^{-9}\exp(-0.89/C).
