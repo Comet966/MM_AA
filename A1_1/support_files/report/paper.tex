@@ -3,7 +3,7 @@
 \usepackage{amsmath,amssymb,bm,booktabs,longtable,array,tabularx,multirow}
 \usepackage{graphicx,float,subcaption,xcolor,hyperref,fancyhdr,enumitem}
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows}
 \usepackage{listings}
 \lstset{
   language=Python,
@@ -516,29 +516,87 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
 \centering
 \begin{tikzpicture}[
     auto,
-    node distance=0.55cm and 1.2cm,
-    startstop/.style={rectangle, rounded corners=3pt, minimum width=3.0cm, minimum height=0.65cm, text centered, draw=blue!60!black, fill=blue!8, font=\small},
-    process/.style={rectangle, minimum width=3.4cm, minimum height=0.65cm, text centered, draw=black!70, fill=gray!8, font=\small},
-    decision/.style={diamond, aspect=2.2, minimum width=2.8cm, text centered, draw=orange!80!black, fill=orange!10, font=\small},
-    arrow/.style={thick, -{Stealth[length=2.5mm]}}
+    font=\small,
+    card_init/.style={
+        rectangle, rounded corners=3.5pt,
+        minimum width=5.0cm, minimum height=0.72cm,
+        align=center,
+        draw=blue!65!black, fill=blue!5,
+        thick,
+        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
+    },
+    card_proc/.style={
+        rectangle, rounded corners=3.5pt,
+        minimum width=5.0cm, minimum height=0.72cm,
+        align=center,
+        draw=black!55, fill=black!2.5,
+        thick,
+        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
+    },
+    card_solver/.style={
+        rectangle, rounded corners=3.5pt,
+        minimum width=5.0cm, minimum height=0.72cm,
+        align=center,
+        draw=blue!70!black, fill=blue!4,
+        thick,
+        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
+    },
+    card_dec/.style={
+        diamond, aspect=2.3,
+        minimum width=3.6cm, minimum height=0.85cm,
+        align=center,
+        draw=orange!80!black, fill=orange!8,
+        thick,
+        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
+    },
+    card_event/.style={
+        rectangle, rounded corners=3.5pt,
+        minimum width=4.2cm, minimum height=0.72cm,
+        align=center,
+        draw=teal!70!black, fill=teal!5,
+        thick,
+        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
+    },
+    card_out/.style={
+        rectangle, rounded corners=3.5pt,
+        minimum width=5.0cm, minimum height=0.72cm,
+        align=center,
+        draw=blue!70!black, fill=blue!8,
+        thick,
+        drop shadow={opacity=0.07, shadow xshift=0.8pt, shadow yshift=-1.2pt}
+    },
+    arrow/.style={
+        -{Stealth[length=2.4mm, width=1.6mm]},
+        thick, color=black!75
+    }
 ]
-\node (init) [startstop] {输入数据与网格：$T^0, C^0$, 半径 $R(t)$, 节点数 $N$};
-\node (fvm) [process, below=0.55cm of init] {FVM 线方法：组装 RHS 空间通量平衡算子 $\mathbf{F}(t,\mathbf{y})$};
-\node (sparsity) [process, below=0.55cm of fvm] {构建两场三点紧凑稀疏雅可比矩阵模式 $\mathbf{J}_{\text{sparse}}$ (CSR)};
-\node (bdf) [process, below=0.55cm of sparsity] {调用 SciPy 刚性求解器：自适应步长 BDF 积分推进};
-\node (check) [decision, below=0.65cm of bdf] {触发达标事件：$\max_i C_i \le 0.15$?};
-\node (brent) [process, right=1.2cm of check] {Brent 算法反解连续达标时间 $t_d$};
-\node (safe) [process, below=0.55cm of brent] {锁定 60 s 离散网格首个严格安全达标时刻};
-\node (end) [startstop, below=0.55cm of safe] {投影采样点，输出 Excel 表格与绘制热力图};
 
+% 主干中轴节点
+\node (init) [card_init] {\textbf{参数输入与网格划分}\\[1.5pt]\footnotesize\color{black!75} $T^0, C^0$, 边界 $(T_a, C_a)$, 半径 $R(t)$};
+\node (fvm) [card_proc, below=0.52cm of init] {\textbf{FVM 空间半离散化}\\[1.5pt]\footnotesize\color{black!75} 控制体通量平衡，组装 RHS $\mathbf{F}(t,\mathbf{y})$};
+\node (sparse) [card_proc, below=0.52cm of fvm] {\textbf{双场稀疏雅可比构建}\\[1.5pt]\footnotesize\color{black!75} 三点紧凑模板 $\mathbf{J}_{\text{sparse}}$ (CSR 格式)};
+\node (bdf) [card_solver, below=0.52cm of sparse] {\textbf{自适应 BDF 刚性推进}\\[1.5pt]\footnotesize\color{black!75} 变步长变阶积分与局部误差控制};
+\node (check) [card_dec, below=0.65cm of bdf] {\textbf{全场达标?}\\[1pt]\footnotesize\color{black!75} $\max C_i \le 0.15$};
+
+% 右侧事件反解分支
+\node (brent) [card_event, right=1.6cm of check] {\textbf{Brent 算法精确定位}\\[1.5pt]\footnotesize\color{black!75} 连续理论临界时刻 $t_d$};
+\node (safe) [card_event, below=0.75cm of brent] {\textbf{60\,s 网格安全判定}\\[1.5pt]\footnotesize\color{black!75} 锁定未舍入 $\max C < 0.15$ 时刻 $t_{\text{safe}}$};
+
+% 汇合底部输出节点
+\node (end) [card_out, below=2.3cm of check] {\textbf{成果输出与图表生成}\\[1.5pt]\footnotesize\color{black!75} 空间投影采样、Excel 报表与时空图};
+
+% 连线绘制
 \draw [arrow] (init) -- (fvm);
-\draw [arrow] (fvm) -- (sparsity);
-\draw [arrow] (sparsity) -- (bdf);
+\draw [arrow] (fvm) -- (sparse);
+\draw [arrow] (sparse) -- (bdf);
 \draw [arrow] (bdf) -- (check);
-\draw [arrow] (check.west) -- ++(-1.2,0) node[above, font=\footnotesize] {否 (推进至设定终点)} |- (end.west);
-\draw [arrow] (check.east) -- node[above, font=\footnotesize] {是} (brent.west);
+
+\draw [arrow] (check.east) -- node[above=2pt, font=\footnotesize] {是} (brent.west);
 \draw [arrow] (brent) -- (safe);
-\draw [arrow] (safe) -- (end);
+\draw [arrow] (safe.south) |- (end.east);
+
+\draw [arrow] (check.south) -- node[left=2pt, font=\footnotesize] {否} (end.north);
+
 \end{tikzpicture}
 \caption{基于线方法 FVM 空间半离散与稀疏雅可比自适应 BDF 的统一数值求解流程}\label{fig:flowchart}
 \end{figure}
