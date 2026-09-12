@@ -1,0 +1,70 @@
+{
+  "perturbation": "each parameter independently multiplied by 0.9 or 1.1",
+  "baseline_parameters": {
+    "heat_transfer_h_W_m2K": 25.0,
+    "mass_transfer_hm_m_s": 8e-07,
+    "diffusivity_scale": 1.0
+  },
+  "baseline": {
+    "question3_continuous_h": 57.56845156041164,
+    "question3_safe_60s_h": 57.583333333333336,
+    "question4_continuous_h": 52.71345170960447,
+    "question4_safe_60s_h": 52.71666666666667
+  },
+  "cases": {
+    "heat_transfer_h": {
+      "minus_10_percent": {
+        "question3_continuous_h": 57.57717102231113,
+        "question3_safe_60s_h": 57.583333333333336,
+        "question4_continuous_h": 52.72002152747566,
+        "question4_safe_60s_h": 52.733333333333334,
+        "question3_relative_change_percent": 0.015146250529838345,
+        "question4_relative_change_percent": 0.012463266316501423
+      },
+      "plus_10_percent": {
+        "question3_continuous_h": 57.561313496536634,
+        "question3_safe_60s_h": 57.56666666666667,
+        "question4_continuous_h": 52.707907683088145,
+        "question4_safe_60s_h": 52.71666666666667,
+        "question3_relative_change_percent": -0.012399263279669188,
+        "question4_relative_change_percent": -0.010517289869134945
+      }
+    },
+    "mass_transfer_hm": {
+      "minus_10_percent": {
+        "question3_continuous_h": 58.29631073713093,
+        "question3_safe_60s_h": 58.3,
+        "question4_continuous_h": 53.02445651156648,
+        "question4_safe_60s_h": 53.03333333333333,
+        "question3_relative_change_percent": 1.2643369015327528,
+        "question4_relative_change_percent": 0.5899913435290011
+      },
+      "plus_10_percent": {
+        "question3_continuous_h": 56.99943078324383,
+        "question3_safe_60s_h": 57.0,
+        "question4_continuous_h": 52.47545697747315,
+        "question4_safe_60s_h": 52.483333333333334,
+        "question3_relative_change_percent": -0.988424669665961,
+        "question4_relative_change_percent": -0.4514876647471685
+      }
+    },
+    "diffusivity_scale": {
+      "minus_10_percent": {
+        "question3_continuous_h": 63.24753311136035,
+        "question3_safe_60s_h": 63.25,
+        "question4_continuous_h": 57.800421289424655,
+        "question4_safe_60s_h": 57.81666666666667,
+        "question3_relative_change_percent": 9.864919755552483,
+        "question4_relative_change_percent": 9.65023047218388
+      },
+      "plus_10_percent": {
+        "question3_continuous_h": 52.94573685597158,
+        "question3_safe_60s_h": 52.95,
+        "question4_continuous_h": 48.55970864411952,
+        "question4_safe_60s_h": 48.56666666666667,
+        "question3_relative_change_percent": -8.02994449067131,
+        "question4_relative_change_percent": -7.879854061478836
+      }
+    }
+  }
+}
