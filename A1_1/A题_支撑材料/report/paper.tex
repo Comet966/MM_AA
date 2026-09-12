@@ -384,30 +384,62 @@ q_i\omega_i^r\frac{d\phi_i}{dt} = \left.r\Gamma\frac{\partial\phi}{\partial r}\r
   \end{align}
   该半离散格式在数值离散层面天然消除了柱坐标系中的 $1/r$ 奇异项，完全避免了在 $r=0$ 处发生除零发散的数值奇异性。
 
-  \item \textbf{外表面 Robin 条件的守恒嵌入}：
-  最外层节点 $i=N$ 对应药材物理外表面（$r_N=R$），其控制微元占据径向区间 $[r_-, R]$，其中内界面位置为半节点 $r_- = r_{N-1/2} = R - \Delta r/2$。该表层控制体的几何权重通过解析积分确定：
+  \item \textbf{外表面 Robin 条件的守恒嵌入与物理机制}：
+  在实际物理中，中药材外表面直接暴露于烘房对流循环热风中。对于最外层网格节点 $i=N$（其物理位置严格位于药材几何外表面 $r_N=R$），其代表的外层边界控制微元占据径向半区间 $[r_-, R]$，其中内界面位于半节点位置 $r_- = r_{N-1/2} = R - \Delta r/2$。该表层控制体的几何体积测度（每单位轴向长度与单位角向弧度）通过严格解析积分给出：
   \begin{equation}
-  \omega_N^r = \int_{r_-}^R r\,dr = \frac{1}{2}(R^2-r_-^2) = \frac{1}{2}\left[R^2 - \left(R-\frac{\Delta r}{2}\right)^2\right] = \frac{1}{2}\left(R\Delta r - \frac{\Delta r^2}{4}\right).
+  \omega_N^r = \int_{r_-}^R r\,dr = \frac{1}{2}(R^2-r_-^2) = \frac{1}{2}\left[R^2 - \left(R-\frac{\Delta r}{2}\right)^2\right] = \frac{1}{2}\left(R\Delta r - \frac{\Delta r^2}{4}\right).\label{eq:omega_N}
   \end{equation}
-  在有限体积法的通量平衡框架下，外表面 Robin 条件并非作为人工差分方程附加，而是作为最外层控制微元外边界面的\textbf{自然物理通量（Natural Physical Flux）}直接嵌入平衡方程中。该表层微元包含两个物理通量界面：
+
+  在有限体积法的通量平衡构架下，表层控制微元的时域积分演化完全由流入、流出该微元边界面的净物理通量决定。针对柱坐标几何特征，定义穿过半径为 $r$ 柱面的\textbf{柱面加权物理传递通量（Radial Surface-Weighted Transfer Fluxes）}：
+  \begin{equation}
+  F_T(r,t) \equiv r k(C)\frac{\partial T}{\partial r},\qquad
+  F_C(r,t) \equiv r D(C,T)\frac{\partial C}{\partial r}.
+  \end{equation}
+  在物理含义上，$F_T(r,t)$ 与 $F_C(r,t)$ 乘以 $2\pi L$ 后分别严格等于流经整个圆柱圆周柱面的总传热功率（单位为 $\mathrm{W}$）与总干基水分质量流率（单位为 $\mathrm{kg/s}$）。该表层半微元 $[r_-, R]$ 仅具有两个物理传递边界：
   \begin{itemize}
-    \item \textbf{内侧传导/扩散界面（$r=r_-$）}：与相邻节点 $i=N-1$ 的微元通过介质内传导与扩散相连，界面通量遵循介质内部本构关系：
+    \item \textbf{内侧传导/扩散界面（$r=r_-$）的内部物理通量}：
+    式\eqref{eq:f_inner_T}与\eqref{eq:f_inner_C}左端的物理量 $F_{N-1/2}^T$ 与 $F_{N-1/2}^C$ 分别明确定义为\textbf{通过内界面 $r_-$ 由药材内部向表层微元供给的柱面加权导热通量与水分扩散通量}。它们直接遵循多孔介质内部的连续物理传递本构方程，采用相邻节点有限差商精确离散表示：
     \begin{align}
-    F_{N-1/2}^{\text{heat}} &= \left.rk\frac{\partial T}{\partial r}\right|_{r_-} \approx r_- k_{N-1/2}\frac{T_N - T_{N-1}}{\Delta r},\\[4pt]
-    F_{N-1/2}^{\text{mass}} &= \left.rD\frac{\partial C}{\partial r}\right|_{r_-} \approx r_- D_{N-1/2}\frac{C_N - C_{N-1}}{\Delta r}.
+    F_{N-1/2}^T &= \left.rk\frac{\partial T}{\partial r}\right|_{r_-} \approx r_- k_{N-1/2}\frac{T_N - T_{N-1}}{\Delta r},\label{eq:f_inner_T}\\[4pt]
+    F_{N-1/2}^C &= \left.rD\frac{\partial C}{\partial r}\right|_{r_-} \approx r_- D_{N-1/2}\frac{C_N - C_{N-1}}{\Delta r}.\label{eq:f_inner_C}
     \end{align}
-    \item \textbf{外侧对流换热/传质界面（$r=R$）}：直接暴露于烘房环境空气中。由界面无质量与无能量积累的物理连续性原理，药材内部传递至表面的通量必须与外部对流交换通量严格平衡。由表面 Robin 边界条件：
-    \begin{align}
-    -k\left.\frac{\partial T}{\partial r}\right|_{r=R} &= h(T_N-T_a) \implies F_R^{\text{heat}} = \left.rk\frac{\partial T}{\partial r}\right|_{r=R} = Rh(T_a-T_N),\\[4pt]
-    -D\left.\frac{\partial C}{\partial r}\right|_{r=R} &= h_m(C_N-C_a) \implies F_R^{\text{mass}} = \left.rD\frac{\partial C}{\partial r}\right|_{r=R} = -Rh_m(C_N-C_a).
-    \end{align}
+    其中界面有效传递系数 $k_{N-1/2}$ 与 $D_{N-1/2}$ 严格取相邻节点 $N-1$ 与 $N$ 的调和平均，准确刻画介质内部的串联传递阻力。
+
+    \item \textbf{外侧对流换热/传质界面（$r=R$）的外部物理通量与连续性}：
+    外表面 $r=R$ 处于固体药材与流体空气的相界面处。根据界面能量守恒与质量守恒原理，界面无几何厚度，因而绝不能凭空蓄积或消耗热量与水分，\textbf{固体内部传导至表面的微元通量必须与流体边界层的外部对流交换通量在界面处严格连续平衡}。
+
+    由表面 Robin 对流换热边界条件式\eqref{eq:robin_t}，介质向外传导的热流密度 $-k\left.\frac{\partial T}{\partial r}\right|_{r=R}$ 严格等于外部流体流向表面的 Newton 冷却对流换热通量 $h(T_a - T_N)$：
+    \begin{equation}
+    -k\left.\frac{\partial T}{\partial r}\right|_{r=R} = h(T_N-T_a) \iff \left.k\frac{\partial T}{\partial r}\right|_{r=R} = h(T_a-T_N).
+    \end{equation}
+    两端乘以边界半径 $R$，即精确得到\textbf{通过外表面净流入表层微元的柱面加权对流吸热通量} $F_R^T$：
+    \begin{equation}
+    F_R^T \equiv \left.rk\frac{\partial T}{\partial r}\right|_{r=R} = Rh(T_a(t)-T_N).\label{eq:f_outer_T}
+    \end{equation}
+    同理，由表面 Robin 对流传质边界条件式\eqref{eq:robin_m}，介质向外扩散的水分流密度 $-D\left.\frac{\partial C}{\partial r}\right|_{r=R}$ 严格等于向外部干燥空气蒸发逸散的水分蒸发通量 $h_m(C_N-C_a)$：
+    \begin{equation}
+    -D\left.\frac{\partial C}{\partial r}\right|_{r=R} = h_m(C_N-C_a) \iff \left.D\frac{\partial C}{\partial r}\right|_{r=R} = -h_m(C_N-C_a).
+    \end{equation}
+    两端乘以边界半径 $R$，即精确得到\textbf{通过外表面向外界环境蒸发逸散的柱面加权对流传质通量} $F_R^C$：
+    \begin{equation}
+    F_R^C \equiv \left.rD\frac{\partial C}{\partial r}\right|_{r=R} = -Rh_m(C_N-C_a(t)).\label{eq:f_outer_C}
+    \end{equation}
   \end{itemize}
-  将内、外界面通量代入表层控制微元的通量守恒方程 $q_N\omega_N^r\frac{d\phi_N}{dt} = F_R - F_{N-1/2}$，即得到外表面节点的完整半离散演化方程：
+
+  \textbf{“守恒嵌入”的本质与严格控制体推导}：
+  在传统有限差分法（FDM）中，处理此类混合 Robin 边界条件时，必须在边界外部人为虚设一层“虚网格点”（Ghost Point）$r_{N+1}=R+\Delta r$，利用虚拟中心差商消元闭合。这不仅破坏了系数矩阵的对称三对角结构，而且容易引入边界外推误差与非物理质量源汇。
+  而在有限体积法中，将控制微元方程 $q\frac{\partial\phi}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right)$ 乘以测度 $r$ 在半控制体 $[r_-, R]$ 上进行严格的空间定积分：
+  \begin{equation}
+  \int_{r_-}^R q\frac{\partial\phi}{\partial t}r\,dr = \int_{r_-}^R \frac{\partial}{\partial r}\left(r\Gamma\frac{\partial\phi}{\partial r}\right)dr \implies q_N\omega_N^r\frac{d\phi_N}{dt} = \left.\left(r\Gamma\frac{\partial\phi}{\partial r}\right)\right|_{R} - \left.\left(r\Gamma\frac{\partial\phi}{\partial r}\right)\right|_{r_-} = F_R - F_{N-1/2}.
+  \end{equation}
+  此时，\textbf{表面 Robin 条件不是作为额外的代数约束，而是直接作为微元外边界面通量 $F_R$ 的解析物理表达式代入微元守恒平衡式中}！这就是有限体积法特有的“无损守恒嵌入”。
+
+  分别代入热、质系统的物理通量式\eqref{eq:f_inner_T}--\eqref{eq:f_outer_C}，并同除以几何测度 $\omega_N^r = \frac{1}{2}(R^2-r_-^2)$，即可严密推导得出最外层表面节点的常微分演化方程：
   \begin{align}
   \frac{dT_N}{dt} &= \frac{2\left[Rh(T_a-T_N) - r_-k_{N-1/2}\dfrac{T_N-T_{N-1}}{\Delta r}\right]}{\rho_Nc_{p,N}(R^2-r_-^2)},\label{eq:surfaceT}\\[10pt]
   \frac{dC_N}{dt} &= \frac{2\left[-Rh_m(C_N-C_a) - r_-D_{N-1/2}\dfrac{C_N-C_{N-1}}{\Delta r}\right]}{R^2-r_-^2}.\label{eq:surfaceC}
   \end{align}
-  上述嵌入过程完全无需像传统有限差分法那样引入虚拟外部网格点（Ghost Points），物理意义极为严密透明：式\eqref{eq:surfaceT}直观反映“外界对流吸热通量与向内部导热耗散通量的净差等于表层温度积累”，式\eqref{eq:surfaceC}直观反映“内部水分扩散补给通量与表面对流蒸发散失通量的净差决定表层含水率下降率”。
+  式\eqref{eq:surfaceT}直观表明“外部热风对流吸热通量 $F_R^T$ 减去向内部传导耗散的导热通量 $F_{N-1/2}^T$ 等于表层热量积累”，式\eqref{eq:surfaceC}直观表明“内部水分扩散补给通量减去表面对流蒸发散失通量决定表层含水率变化”。整个推导无需虚网格点，严格遵守界面能量与质量的连续守恒。
 
   \item \textbf{全局通量守恒性证明与中心零通量约束}：
   有限体积法区别于传统有限差分法最根本的优越性，在于其能够在空间离散层面无条件维持严格的局部与全局守恒性。以全场总水分存量为例，定义单位长度药材内部的水分总质量为：
