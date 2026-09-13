@@ -86,7 +86,7 @@
 
 \subsection{问题背景}
 
-干燥是中药材加工过程中影响成品品质的重要工序。该工艺通常经历预热平衡和恒温干燥两个阶段：烘房通过调节温度与水分浓度，使热量由药材表面逐渐向内部传递，同时促使内部水分向外扩散并由热风带走。药材内部温度场和水分浓度场的变化相互关联，其演化过程还会受到材料物性、外部环境以及药材尺寸变化等因素的共同影响。
+干燥是中药材加工过程中影响成品品质的重要工序。该工艺通常经历\textbf{预热平衡}和恒温干燥两个阶段：烘房通过调节温度与水分浓度，使热量由药材表面逐渐向内部传递，同时促使内部水分向外扩散并由热风带走。药材内部温度场和水分浓度场的变化相互关联，其演化过程还会受到材料物性、外部环境以及药材尺寸变化等因素的共同影响。
 
 在实际生产中，若烘干参数设置不合理，容易出现干燥时间过长、能源利用率偏低以及内外干燥程度不一致等问题，进而影响药材质量。传统的试验优化方法需要反复调整工艺，不仅成本较高，而且周期较长。因此，有必要根据传热传质机理建立数学模型，借助数值计算刻画药材内部温度和水分浓度的变化规律，并进一步预测烘干完成时间，为烘干工艺的分析与优化提供依据。
 
@@ -106,7 +106,7 @@
 
 \section{问题分析}
 
-药材烘干本质上是热量传递与水分迁移同步进行的非稳态过程，二者具有明显的\textbf{热质相似性}。热传导遵循傅里叶定律，水分扩散遵循菲克定律；对于轴对称圆柱药材，其控制方程均可写成“局部积累量等于径向净通量”的形式：
+药材烘干本质上是热量传递与水分迁移同步进行的非稳态过程，二者具有明显的\textbf{热质相似性}。热传导遵循\textbf{傅里叶定律}，水分扩散遵循\textbf{菲克定律}；对于轴对称圆柱药材，其控制方程均可写成“局部积累量等于径向净通量”的形式：
 \begin{equation}
  \rho c_p\frac{\partial T}{\partial t}
  =\frac{1}{r}\frac{\partial}{\partial r}
@@ -115,31 +115,30 @@
  =\frac{1}{r}\frac{\partial}{\partial r}
  \left(rD\frac{\partial C}{\partial r}\right).
 \end{equation}
-其中，温度 $T$ 与水分浓度 $C$、热传导系数 $k$ 与水分扩散系数 $D$、表面对流换热系数 $h$ 与传质系数 $h_m$ 分别构成对应关系。两类场在圆柱中心均满足对称条件，在药材表面均满足第三类边界条件。因此，可在统一的径向控制体积网格上离散温度场与水分场，再通过材料物性随 $C$、$T$ 的变化体现二者之间的耦合。需要注意的是，热量由高温处向低温处传递，而水分由高浓度处向低浓度处扩散，二者的量纲、扩散速率及外部驱动力并不相同，故只能共享建模框架，不能将两种传递过程简单等同。
+其中，温度 $T$ 与水分浓度 $C$、热传导系数 $k$ 与水分扩散系数 $D$、表面对流换热系数 $h$ 与传质系数 $h_m$ 分别构成对应关系。两类场在圆柱中心均满足对称条件，在药材表面均满足第三类边界条件。因此，可在统一的径向控制体积网格上离散温度场与水分场，再通过材料物性随 $C$、$T$ 的变化体现二者之间的耦合。
 
-基于上述相似性，本文将药材视为长径比较大的圆柱体，忽略轴向与周向差异，重点研究温度和水分浓度沿半径方向的变化。空间上采用有限体积法离散，使每个控制体均保持能量与质量守恒；时间上将偏微分方程组转化为常微分方程组，并采用适用于刚性系统的 BDF 方法求解。四个问题由“固定半径下的短时预热”逐步推广至“物性变化的全过程烘干”和“考虑收缩的移动边界烘干”，前一问所得模型为后一问提供基础。
+基于上述相似性，本文将药材视为长径比较大的圆柱体，忽略轴向与周向差异，重点研究温度和水分浓度沿半径方向的变化。空间上采用有限体积法离散，使每个控制体均保持能量与质量守恒；时间上将偏微分方程组转化为常微分方程组，并采用适用于刚性系统的 BDF 方法求解。四个问题由“\textbf{固定半径下的短时预热}”逐步推广至“\textbf{物性变化的全过程烘干}”和“\textbf{考虑收缩的移动边界烘干}”，前一问所得模型为后一问提供基础。
 
 \subsection{问题一分析}
 
-问题一要求在给定烘房温度和水分浓度变化条件下，计算预热平衡阶段药材内部温度场与水分浓度场，并给出指定时刻和径向位置上的结果。该问题的关键在于：外界环境随时间变化，水分扩散系数又随局部含水率改变，因而即使材料的热学参数取常数，整个传热传质过程仍具有时变边界和非线性扩散的特征。
+问题一要求在给定烘房温度和水分浓度条件下，计算预热平衡阶段药材内部温度场与水分浓度场，并给出指定时刻和径向位置上的结果。该问题的关键在于：外界环境随时间变化，水分扩散系数又随局部含水率改变，因而即使材料的热学参数取常数，整个传热传质过程仍具有时变边界和非线性扩散的特征。
 
-首先，根据药材几何尺寸及长圆柱假设，分别建立一维径向热传导方程和水分扩散方程；将附件给出的烘房温度、烘房水分浓度数据作分段线性插值，作为药材表面的动态边界条件。圆柱中心处由于 $r=0$，控制方程含有形式上的奇点，应利用中心控制体的守恒关系进行单独离散；药材表面则分别建立对流换热与对流传质条件。
+首先，根据药材几何尺寸及长圆柱假设，分别建立一维径向热传导方程和水分扩散方程；将附件给出的烘房温度、烘房水分浓度数据作\textbf{分段线性插值}，作为药材表面的动态边界条件。圆柱中心处由于 $r=0$，控制方程含有形式上的奇点，应利用中心控制体的守恒关系进行单独离散；药材表面则分别建立对流换热与对流传质条件。
 
-其次，在同一径向网格上利用有限体积法计算各控制体之间的热通量与水分通量，得到药材各离散位置温度和水分浓度随时间变化的方程组。由于扩散系数 $D(C)$ 随求解结果实时变化，采用隐式 BDF 方法进行时间积分，以提高非线性刚性系统长时间计算的稳定性。最后，利用数值解的连续输出功能读取题目指定时刻和位置的结果，并按规定的时间、空间间隔形成完整数据文件。为排除网格尺寸对结果的显著影响，还需比较网格加密前后的最大误差，验证离散结果已经基本稳定。
+其次，在同一径向网格上利用有限体积法计算各控制体之间的热通量与水分通量，得到药材各离散位置温度和水分浓度随时间变化的方程组。由于扩散系数 $D(C)$ 随求解结果实时变化，采用隐式 BDF 方法进行时间积分，以提高非线性刚性系统长时间计算的稳定性。最后，读取题目指定时刻和位置的结果，并按规定的时间、空间间隔形成完整数据文件。为排除网格尺寸对结果的显著影响，还需比较网格加密前后的最大误差，验证离散结果已经基本稳定。
 
 \subsection{问题二分析}
 
-问题二将计算范围由 $1800\,\mathrm{s}$ 的预热平衡阶段扩展到持续 $2\sim3$ 天的完整烘干过程。与问题一相比，药材的密度、比热容、热传导系数均随水分浓度改变，水分扩散系数同时受温度和水分浓度影响。因此，该问题不再是两个相互独立的扩散方程，而是物性参数不断更新的非线性热质耦合问题。
+问题二将计算范围由 $1800\,\mathrm{s}$ 的预热平衡阶段扩展到持续 $2\sim3$ 天的完整烘干过程。与问题一相比，药材的密度、比热容、热传导系数均随水分浓度改变，水分扩散系数同时受温度和水分浓度影响。因此，该问题不再是两个相互独立的扩散方程，而是物性参数不断更新的\textbf{非线性热质耦合问题}。
 
-在问题一模型的基础上，采用附件三给出的 $\rho(C)$、$c_p(C)$、$k(C)$ 与 $D(C,T)$ 经验关系替换常参数，并在每一个时间步根据当前温度场和水分场更新材料物性。相邻控制体界面处的热传导系数和水分扩散系数采用调和平均，以保证通量连续并减小物性突变引起的数值误差。烘房环境则按实际工艺划分为预热变化阶段和随后近似稳定的恒温干燥阶段。
+在问题一模型的基础上，采用附件三给出的 $\rho(C)$、$c_p(C)$、$k(C)$ 与 $D(C,T)$ 经验关系替换参数，并在每一个时间步根据当前温度场和水分场更新材料物性。相邻控制体界面处的热传导系数和水分扩散系数采用\textbf{调和平均}，以保证通量连续并减小物性突变引起的数值误差。烘房环境则按实际工艺划分为预热变化阶段和近似稳定的恒温干燥阶段。
 
-空间离散后，温度和水分浓度共同组成耦合常微分方程组。由于全过程时间尺度较长，而早期温度变化与后期水分缓慢迁移的时间尺度差异明显，仍采用具有自适应步长的 BDF 方法进行求解。和问题一相比，无需重新构造数值框架，只需更新材料物性与外界条件，即可得到前 $3\,\mathrm{h}$ 及完整烘干时段内的温度、水分浓度分布。
+空间离散后，温度和水分浓度共同组成\textbf{耦合常微分方程组}。仍采用具有自适应步长的 BDF 方法进行求解。和问题一相比，无需重新构造数值框架，只需更新材料物性与外界条件。
 
 \subsection{问题三分析}
 
 问题三要求确定药材内部所有位置的水分浓度均低于 $0.15\,\mathrm{kg/kg}$ 时的烘干时长。该问实质上不是建立新的控制方程，而是在问题二全过程耦合模型上增加终止判据，将定时长仿真转化为未知终止时刻的事件求解问题。
-
-由于药材表面直接与干燥空气接触，通常比内部更早达到目标含水率，靠近中心的位置可能成为决定烘干完成时间的关键。但为避免仅考察中心点造成误判，应以全部离散位置中的最大水分浓度作为判定指标，即构造
+   即构造：
 \begin{equation}
  g(t)=\max_i C_i(t)-0.15.
 \end{equation}
@@ -147,15 +146,15 @@
 
 \subsection{问题四分析}
 
-问题四进一步考虑药材失水收缩，使计算区域的半径随时间变化。此时水分扩散不仅取决于局部浓度梯度，还受到边界移动以及扩散距离缩短的影响。因此，该问题是在问题三基础上的移动边界非线性扩散问题，其难点在于原有固定径向网格不能直接适用于不断变化的物理区域。
+问题四进一步考虑药材失水收缩，使计算区域的半径随时间变化。此时水分扩散不仅取决于局部浓度梯度，还受到边界移动以及扩散距离缩短的影响。其难点在于原有固定网格不能直接适用于不断变化的物理区域。
 
-首先，根据附件二的半径数据构造分段线性函数 $R(t)$，并引入无量纲坐标
+首先，根据附件二的半径数据构造分段线性函数 $R(t)$，并引入\textbf{无量纲坐标}
 \begin{equation}
  \xi=\frac{r}{R(t)},\qquad 0\leq \xi\leq 1,
 \end{equation}
-把随时间收缩的物理区域映射到固定计算区间。坐标变换后，控制方程中除原有的扩散项外，还会出现由 $\dot R(t)$ 引起的网格运动项；表面传质边界中的空间尺度也应随 $R(t)$ 同步修正。随后采用附件四给出的新物性公式，在固定的 $\xi$ 网格上重新进行有限体积离散，并继续使用 BDF 方法推进时间。
+把随时间收缩的物理区域映射到固定计算区间。坐标变换后，控制方程中会出现由 $\dot R(t)$ 引起的\textbf{网格运动项}；表面传质边界中的空间尺度也应随 $R(t)$ 同步修正。随后采用附件四给出的新物性公式，在固定的 $\xi$ 网格上重新进行有限体积离散，并继续使用 BDF 方法推进时间。
 
-最后，以变半径模型中 $\max_i C_i(t)=0.15$ 作为烘干终止条件，求得考虑尺寸变化后的烘干时长。输出时将无量纲位置换算为各时刻的实际半径，同时单独保留药材表面节点的数据，以满足题目对指定时刻、指定位置及表面含水率的要求。将本问结果与问题三对比，还可分析径向收缩对扩散距离、内部水分迁移速度和总烘干时间的影响。
+最后，以变半径模型中 $\max_i C_i(t)=0.15$ 作为\textbf{烘干终止条件}。输出时将无量纲位置换算为各时刻的实际半径，同时单独保留药材表面节点的数据，以满足题目对指定时刻、指定位置及表面含水率的要求。将本问结果与问题三对比，还可分析径向收缩对扩散距离、内部水分迁移速度和总烘干时间的影响。
 
 
 
@@ -171,7 +170,7 @@
 
   \item 假设药材为半径 $2\,\mathrm{cm}$、长度 $25\,\mathrm{cm}$ 的规则圆柱体，材料连续、均匀且各向同性，内部无裂纹、孔洞及热源或水分源。
 
-  \item 假设药材的初始温度和初始含水率均匀，且外界热风沿圆周方向均匀分布，因此温度场和含水率场均具有轴对称性。
+  \item 假设药材的初始温度和初始含水率均匀，且外界热风沿圆周方向均匀分布，温度场和含水率场均具有轴对称性。
 
   \item 假设药材内部仅考虑 Fourier 热传导和 Fick 有效水分扩散，表面仅考虑与环境之间的对流换热和对流传质；忽略热辐射、内部空气对流及压力驱动渗流。
 
@@ -205,20 +204,15 @@ $D$ & 水分有效扩散系数 & $\mathrm{m^2/s}$\\
 $h$ & 表面对流换热系数 & $\mathrm{W/(m^2\cdot K)}$\\
 $h_m$ & 表面对流传质系数 & m/s\\
 $N$ & 径向网格划分区间数 & --\\
-$\Delta r$ & 物理空间网格步长 & m\\
-$\Delta\xi$ & 相对坐标空间步长 & --\\
-$\Delta t$ & 时间推进步长 & s\\
 $\omega_i^r$ & 物理控制体几何权重 & $\mathrm{m^2}$\\
 $\omega_i^\xi$ & 相对坐标控制体几何权重 & --\\
 $\Gamma$ & 广义界面传递系数 & $\mathrm{W/(m\cdot K)}$ 或 $\mathrm{m^2/s}$\\
-$t_d$ & 干燥达标理论临界时刻 & h\\
-$t_{\mathrm{safe}}$ & 60\,s 网格安全达标时刻 & h\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{模型建立}
-药材的热风烘干过程本质是热量由烘房向药材内传导、水分由药材内向表面迁移并蒸发两个过程的耦合。热量扩散的过程称为传热，水分扩散的过程称为传质，两者具有很强的相似性。传热满足 Fourier 导热定律和能量守恒；传质的过程满足 Fick 定律和质量守恒。
+药材的热风烘干过程本质是热量由烘房向药材内传导、水分由药材内向表面迁移并蒸发两个过程的\textbf{耦合}。热量扩散的过程称为\textbf{传热}，水分扩散的过程称为\textbf{传质}，两者具有很强的\textbf{相似性}。传热满足 Fourier 导热定律和能量守恒；传质的过程满足 Fick 定律和质量守恒。
 
 \begin{figure}[H]
 \centering
@@ -254,24 +248,24 @@ $t_{\mathrm{safe}}$ & 60\,s 网格安全达标时刻 & h\\
 
     % Labels for side and end faces (on the right)
     % Top end face
-    \draw[<-, thick, blue!80!black] (0.8, 2.1) to[out=30, in=180] (2.4, 2.6) node[right, font=\small] {端面（顶部端面，截面积 $A_{\text{end}}$）};
+    \draw[<-, thick, blue!80!black] (0.8, 2.1) to[out=30, in=180] (2.4, 2.6) node[right, font=\small] {端面（顶部端面 $A_{\text{end}}$）};
     % Side surface
     \draw[<-, thick, blue!80!black] (1.5, 0.0) -- (2.4, 0.0) node[right, font=\small] {侧面（圆柱周向侧表面 $A_{\text{side}}$）};
     % Bottom end face
-    \draw[<-, thick, blue!80!black] (0.8, -2.1) to[out=-30, in=180] (2.4, -2.6) node[right, font=\small] {端面（底部端面，截面积 $A_{\text{end}}$）};
+    \draw[<-, thick, blue!80!black] (0.8, -2.1) to[out=-30, in=180] (2.4, -2.6) node[right, font=\small] {端面（底部端面 $A_{\text{end}}$）};
 \end{tikzpicture}
-\caption{圆柱药材几何结构及侧面、端面划分示意图}\label{fig:cylinder}
+\caption{圆柱药材几何结构示意图}\label{fig:cylinder}
 \end{figure}
 
 \subsection{直角坐标系下的扩散方程和守恒定律}
-传热和传质都是扩散过程，分别满足 Fourier 定律和 Fick 定律分别如下面\eqref{eq:fourier}，\eqref{eq:fick}所示：
+传热和传质都是\textbf{扩散过程}，分别满足 Fourier 定律和 Fick 定律分别如下面\eqref{eq:fourier}，\eqref{eq:fick}所示：
 \begin{align}
 \mathbf{q} &= -k\nabla T,\label{eq:fourier}\\
 \mathbf{J} &= -D\nabla C,\label{eq:fick}
 \end{align}
 其中 $\mathbf{q}$ 为热流密度矢量，$\mathbf{J}$ 为水分扩散通量矢量，$k$ 为导热系数，$D$ 为水分的扩散系数，$T$ 为绝对温度，$C$ 为干基含水率。
 
-其次，温度和含水量还分别满足能量守恒和质量守恒：
+其次，温度和含水量还分别满足\textbf{能量守恒}和\textbf{质量守恒}：
 \begin{align}
 \rho c_p\frac{\partial T}{\partial t} &= -\nabla\cdot\mathbf{q},\label{eq:cons_energy}\\
 \frac{\partial C}{\partial t} &= -\nabla\cdot\mathbf{J},\label{eq:cons_mass}
@@ -283,7 +277,7 @@ $t_{\mathrm{safe}}$ & 60\,s 网格安全达标时刻 & h\\
 \rho c_p\frac{\partial T}{\partial t} &= \nabla\cdot(k\nabla T),\label{eq:div_heat}\\
 \frac{\partial C}{\partial t} &= \nabla\cdot(D\nabla C).\label{eq:div_mass}
 \end{align}
-在三维直角坐标系 $(x,y,z)$ 下展开上述方程，得到三维热质耦合方程如下：
+在三维直角坐标系 $(x,y,z)$ 下展开上述方程，得到\textbf{三维热质耦合方程}如下：
 \begin{align}
 \rho c_p\frac{\partial T}{\partial t}
 &=\frac{\partial}{\partial x}\left(k\frac{\partial T}{\partial x}\right)
@@ -296,7 +290,7 @@ $t_{\mathrm{safe}}$ & 60\,s 网格安全达标时刻 & h\\
 \end{align}
 
 \subsection{柱坐标变换}
-由于假定中药材外观呈规则圆柱体，自然想到使用柱坐标来简化方程。
+由于假定中药材外观呈规则圆柱体，自然想到使用\textbf{柱坐标}来简化方程。
 
 直角坐标与柱坐标的正逆变换关系为：
 \begin{equation}
@@ -369,7 +363,8 @@ z = z.
 \end{tikzpicture}
 \caption{直角坐标系 $(x,y,z)$ 与正交柱坐标系 $(r,\theta,z)$ 的几何变换示意图}\label{fig:cyl_transform}
 \end{figure}
-根据多元微积分复合函数的链式求导法则，两种坐标系下的偏微分算子满足如下关系：
+\newpage
+根据多元微积分复合函数的\textbf{链式求导法则}，两种坐标系下的偏微分算子满足如下关系：
 \begin{equation}
 \begin{bmatrix}
 \dfrac{\partial}{\partial x} \\[10pt]
@@ -404,7 +399,7 @@ z = z.
 \nabla &= \frac{1}{h_r}\frac{\partial}{\partial r}\mathbf{e}_r + \frac{1}{h_\theta}\frac{\partial}{\partial\theta}\mathbf{e}_\theta + \frac{1}{h_z}\frac{\partial}{\partial z}\mathbf{e}_z \notag\\
 &= \mathbf{e}_r\frac{\partial}{\partial r} + \mathbf{e}_\theta\frac1r\frac{\partial}{\partial\theta} + \mathbf{e}_z\frac{\partial}{\partial z}.\label{eq:grad_cyl}
 \end{align}
-对于矢量场 $\mathbf{A}$ 有柱坐标下的散度公式：
+对于矢量场 $\mathbf{A}$ 有柱坐标下的\textbf{散度公式}：
 \begin{align}
 \nabla\cdot\mathbf{A} &= \frac{1}{h_rh_\theta h_z}\left[\frac{\partial}{\partial r}(h_\theta h_zA_r) + \frac{\partial}{\partial\theta}(h_rh_zA_\theta) + \frac{\partial}{\partial z}(h_rh_\theta A_z)\right] \notag\\
 &= \frac1r\frac{\partial}{\partial r}(rA_r) + \frac1r\frac{\partial A_\theta}{\partial\theta} + \frac{\partial A_z}{\partial z}.\label{eq:div_cyl}
@@ -414,7 +409,7 @@ z = z.
 \nabla\cdot(k\nabla T) &= \frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right) + \frac{1}{r^2}\frac{\partial}{\partial\theta}\left(k\frac{\partial T}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(k\frac{\partial T}{\partial z}\right),\label{eq:div_heat_cyl}\\[10pt]
 \nabla\cdot(D\nabla C) &= \frac1r\frac{\partial}{\partial r}\left(rD\frac{\partial C}{\partial r}\right) + \frac{1}{r^2}\frac{\partial}{\partial\theta}\left(D\frac{\partial C}{\partial\theta}\right) + \frac{\partial}{\partial z}\left(D\frac{\partial C}{\partial z}\right).\label{eq:div_mass_cyl}
 \end{align}
-得到柱坐标下的热质耦合方程如下：
+得到\textbf{柱坐标下的热质耦合方程}如下：
 \begin{align}
 \rho c_p\frac{\partial T}{\partial t}
 &=\frac1r\frac{\partial}{\partial r}\left(rk\frac{\partial T}{\partial r}\right)
@@ -427,10 +422,10 @@ z = z.
 \end{align}
 
 \subsection{柱坐标扩散方程的简化}
-式\eqref{eq:cyl_heat}与式\eqref{eq:cyl_mass}给出了柱坐标下的热质耦合方程。现在要对其进行近似简化，理由如下：
+式\eqref{eq:cyl_heat}与式\eqref{eq:cyl_mass}给出了柱坐标下的\textbf{热质耦合方程}。现在要对其进行近似简化，理由如下：
 \begin{enumerate}[label=(\arabic*)]
   \item \textbf{旋转对称性}：
-  已经假设药材外观呈规则圆柱体，并且质地均匀，具备严格的几何旋转对称性，以及烘房内热风流动平稳且均匀掠过圆柱外表面。环境温度 $T_a(t)$、环境水分浓度 $C_a(t)$ 以及表面对流换热与传质系数 $h, h_m$ 均不依赖于周向角 $\theta$。因此，温度场和水分场满足周向各向同性，即 $\frac{\partial T}{\partial\theta}=0$、$\frac{\partial C}{\partial\theta}=0$。
+  已经假设药材外观呈规则圆柱体，并且质地均匀，具备严格的几何旋转对称性，以及烘房内热风流动平稳且均匀掠过圆柱外表面。环境温度 $T_a(t)$、环境水分浓度 $C_a(t)$ 以及表面对流换热与传质系数 $h, h_m$ 均不依赖于周向角 $\theta$。因此，温度场和水分场满足\textbf{周向各向同性}，即 $\frac{\partial T}{\partial\theta}=0$、$\frac{\partial C}{\partial\theta}=0$。
 
   \item \textbf{大长径比与大面积比}：
   药材实测几何尺寸为长度 $L=25\text{ cm}$，初始半径 $R_0=2\text{ cm}$（直径 $2R_0=4\text{ cm}$），长径比为 $L/(2R_0)=6.25\gg1$。圆柱周向侧面积为 $A_{\text{side}}=2\pi R_0 L$，而两端截面积之和仅为 $2A_{\text{end}}=2\pi R_0^2$。侧面积与端面积之比高达 $A_{\text{side}}/(2A_{\text{end}})=L/R_0=12.5$，这意味着超过 $92.6\%$ 的热量吸收与水分蒸发由侧表面承担，两端面通量占比极低，端部效应仅局限在极小的区域。
@@ -448,7 +443,7 @@ z = z.
 \end{enumerate}
 
 \paragraph{小结}
-依据上述四条证据，可以将三维柱坐标方程降维为一维，将证据单列如下：
+依据上述四条证据，可以将三维柱坐标方程\textbf{降维为一维}，将证据单列如下：
 \begin{enumerate}[label=(\arabic*)]
   \item \textbf{旋转对称性}：
   \begin{equation}
@@ -485,7 +480,7 @@ z = z.
   \end{equation}
 
   \item \textbf{外表面 Robin 传热与传质条件}：
-  在药材与烘房热风接触的侧表面 $r=R$ 处，传热与传质遵循界面通量守恒原理。药材由内向外的热通量与水分通量，等于表面向外部环境对流换热与对流蒸发传质的净通量，分别服从 Newton 冷却定律与表面对流传质定律：
+  在药材与烘房热风接触的侧表面 $r=R$ 处，传热与传质遵循\textbf{界面通量守恒原理}。药材由内向外的热通量与水分通量，等于表面向外部环境对流换热与对流蒸发传质的净通量，分别服从 \textbf{Newton 冷却定律}与\textbf{表面对流传质定律}：
   \begin{align}
   -k(C_s)\left.\frac{\partial T}{\partial r}\right|_{r=R} &= h\left[T(R,t)-T_a(t)\right],\label{eq:robin_t}\\[8pt]
   -D(C_s,T_s)\left.\frac{\partial C}{\partial r}\right|_{r=R} &= h_m\left[C(R,t)-C_a(t)\right],\label{eq:robin_m}
@@ -521,10 +516,10 @@ z = z.
 
 \section{问题求解}
 
-\subsection{问题1：恒定热物性下的预热阶段温度与水分场}
+\subsection{问题1：恒定热物性下的温度与水分场}
 
 \subsubsection{模型建立}
-问题1研究前 $1800\,\mathrm{s}$ 预热平衡阶段内药材温度与水分浓度的瞬态变化。该阶段药材半径保持为 $R=0.02\,\mathrm m$，附录2给出的密度、比热容和热传导系数均取常数，而水分扩散系数随局部干基含水率变化，即
+问题1研究前 $1800\,\mathrm{s}$ 预热平衡阶段内药材温度与水分浓度的瞬态变化。该阶段药材半径保持为 $R=0.02\,\mathrm m$，附录2给出的密度、比热容和热传导系数均取\textbf{常数}，而水分扩散系数随局部干基含水率变化，即
 \begin{equation}
 \begin{aligned}
 \rho_1&=820\ \mathrm{kg/m^3},&
@@ -559,12 +554,12 @@ D_1(C)&=7.0\times10^{-9}\exp\!\left(-\frac{0.89}{C}\right)\ \mathrm{m^2/s}.
 \right.\label{eq:q1_system}
 \raisetag{1.5\baselineskip}
 \end{equation}
-其中 $h=25\ \mathrm{W/(m^2\cdot K)}$，$h_m=8.0\times10^{-7}\ \mathrm{m/s}$。由于温度方程中不含 $C$，水分方程中的 $D_1$ 也不依赖 $T$，故问题1的温度场和水分场解耦，可在同一数值框架下分别推进。
+其中 $h=25\ \mathrm{W/(m^2\cdot K)}$，$h_m=8.0\times10^{-7}\ \mathrm{m/s}$。由于温度方程中不含 $C$，水分方程中的 $D_1$ 也不依赖 $T$，故问题1的温度场和水分场\textbf{解耦}，可在同一数值框架下分别推进。
 
 \subsubsection{模型求解}
-附件1只给出了若干时刻的烘房环境数据。首先采用分段线性插值得到连续的边界函数 $T_a(t)$ 和 $C_a(t)$，并将环境温度换算为绝对温度。
+附件1只给出了若干时刻的烘房环境数据。首先采用分段线性插值得到连续的边界函数 $T_a(t)$ 和 $C_a(t)$，并将环境温度换算为\textbf{绝对温度}。
 
-随后使用有限体积法使径向空间离散化，将药材半径均分为160段，共设置161个径向节点：
+随后使用有限体积法使径向空间\textbf{离散化}，将药材半径均分为160段，共设置161个径向节点：
 \begin{equation}
 r_i=i\Delta r,\qquad \Delta r=\frac{R}{N}=1.25\times10^{-4}\ \mathrm m
 =0.0125\ \mathrm{cm},\qquad i=0,1,\ldots,N.
@@ -578,7 +573,7 @@ r_i=i\Delta r,\qquad \Delta r=\frac{R}{N}=1.25\times10^{-4}\ \mathrm m
 (C,1,D_1(C)), & \text{水分场}.
 \end{cases}
 \end{equation}
-对每个环形控制体作通量平衡，内部节点的离散方程可写为
+对每个环形控制体作\textbf{通量平衡}，内部节点的离散方程可写为
 \begin{equation}
 q_i\omega_i^r\frac{d\phi_i}{dt}=F_{i+1/2}-F_{i-1/2},\qquad
 F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}
@@ -589,19 +584,19 @@ F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}
 \omega_i^r=\frac{r_{i+1/2}^2-r_{i-1/2}^2}{2},\qquad
 \Gamma_{i+1/2}=\frac{2\Gamma_i\Gamma_{i+1}}{\Gamma_i+\Gamma_{i+1}}.
 \end{equation}
-界面系数采用调和平均\cite{patankar}。圆心处取零通量，药材表面的对流边界则写成
+界面系数采用\textbf{调和平均}\cite{patankar}。圆心处取零通量，药材表面的对流边界则写成
 \begin{equation}
 F_R^T=Rh(T_a-T_N),\qquad F_R^C=Rh_m(C_a-C_N).
 \end{equation}
-相邻控制体共用同一个界面通量，因此内部通量会成对抵消，药材整体的热量和水分变化均由表面对流边界决定。
+相邻控制体共用同一个界面通量，因此内部通量会\textbf{成对抵消}，药材整体的热量和水分变化均由表面对流边界决定。
 
-完成空间离散后，将各节点的温度和含水率组成状态向量：
+完成空间离散后，将各节点的温度和含水率组成\textbf{状态向量}：
 \begin{equation}
 \mathbf y=[T_0,\ldots,T_N,C_0,\ldots,C_N]^T,\qquad
 \frac{d\mathbf y}{dt}=\mathbf F(t,\mathbf y),\quad \mathbf y(0)=\mathbf y_0.
 \label{eq:ode_standard}
 \end{equation}
-至此，原偏微分方程组转化为常微分方程组。考虑到温度和水分的变化速度相差较大，采用适合刚性问题的后向差分公式（BDF）推进时间。其计算格式为
+至此，原偏微分方程组转化为常微分方程组。考虑到温度和水分的变化速度相差较大，采用适合刚性问题的\textbf{后向差分公式（BDF）}推进时间。其计算格式为
 \begin{equation}
 \sum_{j=0}^{k}\alpha_j\mathbf y_{n+1-j}
 =\Delta t_n\beta\,\mathbf F(t_{n+1},\mathbf y_{n+1}),\qquad 1\le k\le5,
