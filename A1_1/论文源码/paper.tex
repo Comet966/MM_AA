@@ -491,7 +491,7 @@ z = z.
 综合简化后的扩散方程与边界定解条件，问题1--3在 $0\le r\le R$ 下构成的热质耦合方程组可统一表示为：
 \begin{equation}
 \left\{
-\begin{array}{@{}l@{\quad}l@{}}
+\begin{array}{@{}l@{\quad}c@{}}
 \text{传热方程：} &
 \displaystyle \rho(C)c_p(C)\frac{\partial T}{\partial t}
 =\frac{1}{r}\frac{\partial}{\partial r}\left(rk(C)\frac{\partial T}{\partial r}\right),\\[12pt]
@@ -531,7 +531,7 @@ D_1(C)&=7.0\times10^{-9}\exp\!\left(-\frac{0.89}{C}\right)\ \mathrm{m^2/s}.
 将上述物性参数及附件1给出的烘房环境边界代入第五章建立的一维径向模型，得到问题1的完整初边值问题：
 \begin{equation}
 \left\{
-\begin{array}{@{}l@{\quad}l@{}}
+\begin{array}{@{}l@{\quad}c@{}}
 \text{传热方程：} &
 \displaystyle \rho_1c_{p1}\frac{\partial T}{\partial t}
 =\frac{1}{r}\frac{\partial}{\partial r}\!\left(rk_1\frac{\partial T}{\partial r}\right),\\[12pt]
@@ -696,12 +696,9 @@ F_R^T=Rh(T_a-T_N),\qquad F_R^C=Rh_m(C_a-C_N).
 
 \subsection{问题2：非线性物性下的耦合演化}
 
-\subsubsection{模型求解}
+\subsubsection{模型建立}
 
-在问题1中，我们将材料的各项物性参数看作常数，并据此求出了物料内部
-温度和含水率随时间的变化。问题2在此基础上进一步考虑物性参数的变化，即
-材料的密度、比热容、导热系数和水分扩散系数均会随着温度或含水率发生改变。
-根据附录3，问题2中各物性参数的计算式为
+问题1将药材的热物性视为常数。问题2在此基础上进一步考虑物性参数随状态变化，即密度、比热容和导热系数随水分浓度变化，水分扩散系数同时受温度和水分浓度影响。根据附录3，问题2中各物性参数的计算式为
 \begin{equation}
 \begin{aligned}
 \rho_2(C)
@@ -718,73 +715,124 @@ D_2(C,T)
 \label{eq:q2_properties}
 \end{equation}
 
-可以看出，密度、比热容和导热系数均与含水率有关，而水分扩散系数
-同时受到温度和含水率的影响。因此，在物料干燥的过程中，温度和含水率发生
-变化后，各项物性参数也会随之改变，进而影响下一时刻的传热和传质过程。因而，
-在求解时，不能再将这些参数预先设为固定值，而需要根据每一时刻的温度和
-含水率重新计算。将式\eqref{eq:q2_properties}代入式\eqref{eq:q1_system}，即可
-得到问题2所需的温度场--水分场联立模型。
+随着温度场和水分场演化，上述物性会实时改变，并进一步影响后续的传热传质过程，由此形成双向热质耦合。将式\eqref{eq:q2_properties}代入第五章建立的一维径向模型，并与初始条件和边界条件联立，得到问题2整个烘干过程中，药材温度和水分浓度变化规律的数学模型：
+\par\vspace{0.5\baselineskip}
+\begin{equation}
+\vcenter{\hbox{\resizebox{0.96\textwidth}{!}{$
+\left\{
+\begin{array}{@{}l@{\quad}c@{\qquad}l@{}}
+\text{传热方程：}
+&(650+128C)\left(1450+2736\frac{C}{C+1}\right)\frac{\partial T}{\partial t}
+=\frac{1}{r}\frac{\partial}{\partial r}
+\left[r\left(0.21+0.38\frac{C}{C+1}\right)\frac{\partial T}{\partial r}\right],
+&0<r<R,\ t>0,\\[6pt]
+\text{传质方程：}
+&\frac{\partial C}{\partial t}
+=\frac{1}{r}\frac{\partial}{\partial r}
+\left[2.4\times10^{-3}r
+\exp\!\left(-\frac{0.45}{C}\right)
+\exp\!\left(-\frac{3850}{T}\right)
+\frac{\partial C}{\partial r}\right],
+&0<r<R,\ t>0,\\[6pt]
+\text{初始条件：}
+&T(r,0)=301.15\ \mathrm K,\qquad C(r,0)=2.55,
+&0\le r\le R,\\[6pt]
+\text{中心对称条件：}
+&\left.\frac{\partial T}{\partial r}\right|_{r=0}=0,\qquad
+\left.\frac{\partial C}{\partial r}\right|_{r=0}=0,
+&t>0,\\[6pt]
+\text{表面对流换热：}
+&-\left(0.21+0.38\frac{C_s}{C_s+1}\right)
+\left.\frac{\partial T}{\partial r}\right|_{r=R}
+=h[T_s-T_a(t)],
+&t>0,\\[6pt]
+\text{表面对流传质：}
+&-2.4\times10^{-3}
+\exp\!\left(-\frac{0.45}{C_s}\right)
+\exp\!\left(-\frac{3850}{T_s}\right)
+\left.\frac{\partial C}{\partial r}\right|_{r=R}
+=h_m[C_s-C_a(t)],
+&t>0.
+\end{array}
+\right.
+$}}}
+\label{eq:q2_full_system}
+\raisetag{1.5\baselineskip}
+\end{equation}
+\par\vspace{0.5\baselineskip}
+其中，$T_s=T(R,t)$、$C_s=C(R,t)$ 分别为药材表面的温度和水分浓度，$T_a(t)$、$C_a(t)$ 分别为烘房环境温度和水分浓度。式\eqref{eq:q2_full_system}表明，温度场通过 $D_2(C,T)$ 影响水分迁移，水分场则通过 $\rho_2(C)$、$c_{p2}(C)$ 和 $k_2(C)$ 影响热量传递。
 
-在前面的求解过程中，我们已经完成了控制方程和边界条件的处理。因此，对于问题2，
-我们只需在每个时间步内增加物性参数的更新过程。具体求解步骤如下：
+\subsubsection{模型求解}
 
-\noindent\textbf{Step1：}输入问题1中已经确定的初始条件和边界条件，并沿物料
-半径方向设置201个节点。中心位置仍采用对称边界条件，物料表面采用相应的
-传热和传质边界条件。
+问题2继续采用问题1的有限体积--BDF框架，区别在于每次计算方程右端项时均需依据当前状态更新物性。具体步骤如下：
 
-\noindent\textbf{Step2：}根据当前时刻各节点的温度$T_i$和含水率$C_i$，利用
-式\eqref{eq:q2_properties}分别计算该节点处的$\rho_{2,i}$、$c_{p2,i}$、
-$k_{2,i}$和$D_{2,i}$。
+\noindent\textbf{Step1：}输入初始条件和环境边界，沿药材半径方向均匀设置201个节点。中心采用对称边界，表面采用对流换热和对流传质边界。
 
-\noindent\textbf{Step3：}将更新后的物性参数代入传热传质方程，采用与问题1
-相同的有限体积法对空间进行离散，并用BDF方法求出下一时刻各节点的温度
-和含水率。若该时间步的计算结果满足收敛条件，则继续计算下一时刻；否则，
-需再次更新物性参数并进行求解。
+\noindent\textbf{Step2：}根据当前节点的 $T_i$ 和 $C_i$，由式\eqref{eq:q2_properties}计算 $\rho_{2,i}$、$c_{p2,i}$、$k_{2,i}$ 和 $D_{2,i}$；相邻节点间的 $k_2$ 与 $D_2$ 采用调和平均，以保证界面通量连续。
 
-\noindent\textbf{Step4：}重复上述过程，直到计算时间达到$10800\ \mathrm{s}$。
-最后输出物料在代表时刻的径向分布曲线以及前3 h内的温度场和水分场变化
-情况，并对物料中心和表面的计算结果进行比较。
+\noindent\textbf{Step3：}将更新后的物性代入有限体积离散方程，把全部节点的温度和水分浓度组成同一状态向量，交由BDF求解器自适应推进。在隐式迭代过程中，物性随试算状态同步更新。
 
-\subsubsection{求解结果}
+\noindent\textbf{Step4：}重复上述过程直至 $t=10800\ \mathrm s$。计算完成后，每隔 $1\ \mathrm s$、每隔 $0.1\ \mathrm{cm}$ 提取结果并写入 \texttt{result2.xlsx}，同时输出题目指定时刻与径向位置的数据。
 
-使用上述方法对问题2进行计算。当$t=10800\ \mathrm{s}$时，物料中心温度为
-$49.8484\ {}^\circ\mathrm{C}$，表面温度为$49.8975\ {}^\circ\mathrm{C}$，
-二者仅相差$0.0491\ {}^\circ\mathrm{C}$。由此可以看出，经过3 h后，物料
-中心和表面的温度已经十分接近，温度在径向上的差异较小。
+\subsubsection{计算结果与分析}
 
-在同一时刻，物料中心处的含水率为$1.7658\ \mathrm{kg/kg}$，表面处的含水率
-为$1.0080\ \mathrm{kg/kg}$，二者相差$0.7578\ \mathrm{kg/kg}$。与温度的
-计算结果相比，此时中心和表面的含水率仍有较大差异，说明物料内部的水分
-尚未充分向表面迁移。
+表\ref{tab:q2t}与表\ref{tab:q2c}分别列出了前 $3\ \mathrm h$ 内每隔 $0.5\ \mathrm h$、各指定径向位置处的温度和水分浓度。
 
-物料在代表时刻的温度和含水率径向分布如图\ref{fig:q2_profiles}所示。从图中
-可以看出，温度曲线已经较为平缓，而含水率从中心到表面呈现出较为明显的
-下降趋势，这与上述计算结果相符。
+\begin{table}[H]
+\centering
+\caption{问题2：3 h内药材温度（$^\circ$C）}\label{tab:q2t}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+0.5 & 32.1893 & 32.3822 & 32.9658 & 33.9602 & 35.4140 \\
+1.0 & 40.3812 & 40.5532 & 41.0602 & 41.8776 & 42.9947 \\
+1.5 & 45.8464 & 45.9346 & 46.1929 & 46.6054 & 47.1418 \\
+2.0 & 48.4507 & 48.4885 & 48.5988 & 48.7732 & 49.0041 \\
+2.5 & 49.5259 & 49.5383 & 49.5744 & 49.6312 & 49.7046 \\
+3.0 & 49.8484 & 49.8518 & 49.8617 & 49.8773 & 49.8975 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{问题2：3 h内水分浓度（kg/kg）}\label{tab:q2c}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+0.5 & 2.5499 & 2.5489 & 2.5256 & 2.3257 & 1.6486 \\
+1.0 & 2.5257 & 2.4948 & 2.3578 & 2.0230 & 1.4711 \\
+1.5 & 2.3861 & 2.3256 & 2.1344 & 1.8020 & 1.3476 \\
+2.0 & 2.1708 & 2.1084 & 1.9236 & 1.6259 & 1.2311 \\
+2.5 & 1.9562 & 1.9002 & 1.7357 & 1.4720 & 1.1172 \\
+3.0 & 1.7658 & 1.7162 & 1.5700 & 1.3333 & 1.0080 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+由表中结果可知，$t=3\ \mathrm h$ 时药材中心温度为 $49.8484\ {}^\circ\mathrm C$，表面温度为 $49.8975\ {}^\circ\mathrm C$，二者仅相差 $0.0491\ {}^\circ\mathrm C$；中心和表面的水分浓度则分别为 $1.7658$ 和 $1.0080\ \mathrm{kg/kg}$，相差 $0.7578\ \mathrm{kg/kg}$。这说明此时温度场已基本均匀，而内部水分尚未充分迁移至表面。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\textwidth]{question2_profiles.png}
-\caption{问题2在代表时刻的径向温度与含水率分布}
+\caption{问题2在代表时刻的径向温度与水分浓度分布}
 \label{fig:q2_profiles}
 \end{figure}
 
-前3 h内温度场和水分场的变化情况如图\ref{fig:q2_heatmaps}所示。从图可以看出，
-随着加热时间的增加，物料各位置温度的差异逐渐减小；而相比之下，含水率的变化则要慢得多，直至计算结束时，中心处的含水率仍高于表面。这是由于水分扩散系数
-$D_2(C,T)$会随着温度和含水率的变化而改变，使得物料内部不同位置的水分
-迁移速度并不相同。因此，在前3 h内，物料的温度已基本趋于均匀，而水分仍
-需较长时间才能由内部逐渐向外扩散。
+图\ref{fig:q2_profiles}显示，温度曲线随时间逐渐变平，而水分浓度始终由中心向表面递减。前 $3\ \mathrm h$ 内两场的时空演化如图\ref{fig:q2_heatmaps}所示。由于 $D_2(C,T)$ 随局部状态改变，不同位置的水分迁移速度并不相同，水分场达到均匀所需的时间明显长于温度场。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{question2_heatmaps.png}
-\caption{问题2前3 h温度场与水分场的二维时空分布}
+\caption{问题2前3 h温度场与水分浓度场的二维时空分布}
 \label{fig:q2_heatmaps}
 \end{figure}
 
-综上所述，在充分考虑物料的非线性物性之后，它的温度的变化速度仍明显快于水分向外迁移的
-速度。经过3 h计算，物料内部温度已经较为均匀，但中心和表面的含水率仍存在
-较大差异。因此，在后续判断物料是否达到干燥要求时，不能只考虑温度变化，
-还需要关注内部水分的扩散过程。
+综上，考虑非线性物性后，药材升温速度仍明显快于水分向外迁移的速度。因此，后续判断药材是否达到干燥要求时，应以内部水分浓度而非温度作为主要判据。
 
 \subsection{问题3：固定半径下的干燥终点}
 
@@ -813,7 +861,7 @@ t_{\mathrm{c}}
 \qquad g\!\left(t_{\mathrm{c}}\right)=0.
 \label{eq:q3_continuous_time}
 \end{equation}
-(1)式中，$R$为物料半径，$C(r,t)$为位置$r$、时刻$t$处的水分浓度。
+式\eqref{eq:q3_continuous_time}中，$R$为物料半径，$C(r,t)$为位置$r$、时刻$t$处的水分浓度。
 
 \subsubsection{数值求解方法}
 
@@ -882,11 +930,35 @@ $60\ \mathrm{s}$网格复核 & 207300 & 57.5833 & 0.149984 \\
 \end{tabular}
 \end{table}
 
+表\ref{tab:q3c}进一步给出了烘干过程中每隔 $6\ \mathrm h$ 以及最终达标时刻，各指定径向位置处的水分浓度；每隔 $60\ \mathrm s$、每隔 $0.1\ \mathrm{cm}$ 的完整结果保存在 \texttt{result3.xlsx} 中。
+
+\begin{table}[H]
+\centering
+\caption{问题3每6 h及达标时刻的水分浓度（kg/kg）}
+\label{tab:q3c}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+\midrule
+6 & 1.0172 & 0.9884 & 0.9017 & 0.7550 & 0.5326 \\
+12 & 0.4564 & 0.4434 & 0.4032 & 0.3298 & 0.1640 \\
+18 & 0.2990 & 0.2917 & 0.2688 & 0.2254 & 0.0843 \\
+24 & 0.2379 & 0.2329 & 0.2168 & 0.1857 & 0.0663 \\
+30 & 0.2059 & 0.2020 & 0.1893 & 0.1642 & 0.0597 \\
+36 & 0.1860 & 0.1826 & 0.1719 & 0.1505 & 0.0565 \\
+42 & 0.1722 & 0.1692 & 0.1598 & 0.1408 & 0.0547 \\
+48 & 0.1619 & 0.1593 & 0.1508 & 0.1336 & 0.0536 \\
+54 & 0.1540 & 0.1516 & 0.1437 & 0.1278 & 0.0529 \\
+57.5833 & 0.1500 & 0.1477 & 0.1402 & 0.1250 & 0.0525 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 由表\ref{tab:q3_results}可以看出，两种方法所得时刻仅相差$53.4\ \mathrm{s}$，小于程序的一个
-输出步长，因而选取$207300\ \mathrm{s}$作为最终结果是合理的。此外，通过对物料
-不同位置的水分浓度进行比较可以发现，物料表面处的水分浓度在$12.55\ \mathrm{h}$左右已经降至
-$0.15$，而中心处的水分浓度约在$57.58\ \mathrm{h}$才降至这一数值，前后相差
-$45.03\ \mathrm{h}$。
+输出步长，因而选取$207300\ \mathrm{s}$作为最终结果是合理的。由表\ref{tab:q3c}可见，物料
+表面处的水分浓度在$12.55\ \mathrm{h}$左右已经降至$0.15$，而中心处的水分浓度约在
+$57.58\ \mathrm{h}$才降至这一数值，前后相差$45.03\ \mathrm{h}$。
 
 这是由于物料表面的水分可以直接向外界扩散，而中心处的水分
 需要先从物料内部逐渐向表面迁移，这一过程所经过的距离较长，因而下降速度较慢。因此，
@@ -961,7 +1033,7 @@ R(t)=R_j+\frac{R_{j+1}-R_j}{t_{j+1}-t_j}(t-t_j),\qquad
 为简化记号，后文仍以 $T$ 和 $C$ 表示映射后的温度场与水分场。将式\eqref{eq:q4_chain_rule}代入第五章的一维径向模型，得到固定计算域上的完整初边值问题：
 \begin{equation}
 \left\{
-\begin{array}{@{}l@{\quad}l@{}}
+\begin{array}{@{}l@{\quad}c@{}}
 \text{传热方程：} &
 \displaystyle \frac{\partial T}{\partial t}
 =\xi\frac{\dot R}{R}\frac{\partial T}{\partial\xi}
