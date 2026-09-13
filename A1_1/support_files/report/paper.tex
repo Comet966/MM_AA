@@ -1061,14 +1061,27 @@ $D$ 增大 $10\%$ & $-8.03\%$ & $-7.88\%$ &\\
 
 \subsection{几何收缩机制解耦讨论}
 \label{sec:mechanism_decoupling}
-在问题4中，烘干进程受到“物性改变”与“半径收缩”的双重耦合影响。为清晰辨识各自的贡献，设立四组对照算例开展解耦分析（见图\ref{fig:shrinkage}与图\ref{fig:radius_comp}）：
+在问题4中，烘干进程受到“物性改变”与“半径收缩”的双重耦合影响。为清晰辨识各自的贡献，设立三组对照算例开展解耦分析（见图\ref{fig:shrinkage}与图\ref{fig:radius_comp}）：
 
-\subsubsection{材料本征阻力与几何收缩效应的解耦对照}
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{算例 A（基准问题3）}：采用附录3物性、固定半径 2 cm，达标时长为 \QThreeDryHours\ h；
-  \item \textbf{算例 B（物性置换对照）}：采用附录4物性、保持固定半径 2 cm，达标时长大幅延长至 \AppendixFourFixedHours\ h（增加 \AppendixIncrease，即长达 5.42 天！）。这清晰表明附录4所表征的多孔材料其内部孔隙扩散阻力远高于附录3；
-  \item \textbf{算例 C（问题4完整收缩）}：采用附录4物性且计入实测动态收缩，达标时长大幅削减至 \QFourDryHours\ h。相对固定半径（算例 B）缩短了 77.3 h，降幅高达 \ShrinkReduction，干燥整体速率提升了 2.47 倍！
-\end{enumerate}
+\begin{table}[H]
+\centering
+\caption{几何收缩机制解耦算例汇总}
+\label{tab:decoupling_cases}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{2.5cm}
+                >{\raggedright\arraybackslash}p{4.3cm}
+                >{\centering\arraybackslash}p{2.6cm}
+                >{\raggedright\arraybackslash}p{5.0cm}}
+\toprule
+算例 & 物性与几何条件 & 达标时长 & 对照评价 \\
+\midrule
+A（基准） & 附录3物性，固定半径 2 cm & \QThreeDryHours\ h & 作为问题3基准结果 \\
+B（物性置换） & 附录4物性，固定半径 2 cm & \AppendixFourFixedHours\ h & 相比算例 A 增加 \AppendixIncrease，内部扩散阻力显著增大 \\
+C（完整收缩） & 附录4物性，计入实测动态收缩 & \QFourDryHours\ h & 相比算例 B 缩短 77.3 h，降幅 \ShrinkReduction，整体速率提升 2.47 倍 \\
+\bottomrule
+\end{tabular}
+\end{table}
 算例 B 与算例 C 的剧烈反差证明：\textbf{几何收缩显著缩短了物料内部水分向表面析出的特征扩散距离（$\tau \propto R^2$），是抵消材料本征大扩散阻力、加速干燥完成的最关键机制}。若在烘干建模中忽略物料收缩，将会产生高达数天的严重滞后误差。
 
 \begin{figure}[H]
@@ -1099,14 +1112,21 @@ $D$ 增大 $10\%$ & $-8.03\%$ & $-7.88\%$ &\\
 \end{enumerate}
 
 \subsection{结论}
-\subsubsection{主要研究结论}
 \begin{enumerate}[label=(\arabic*)]
   \item 烘干初期温度场在 30 min 内迅速建立并在 3 h 内高度接近热平衡，而水分场的迁移具有显著的时间滞后性，全过程由中心最晚达到阈值；
   \item 问题3固定半径下的全域烘干达标时刻为 \QThreeDryHours\ h（约 2.40 d）；问题4在附录4物性与动态收缩下的达标时刻为 \QFourDryHours\ h（约 2.20 d），终点尺寸为 \QFourDryRadius\ cm；
   \item 几何收缩是克服材料内部大扩散阻力的最关键驱动机制，能使干燥整体提速达 2.47 倍。
 \end{enumerate}
 
-\subsubsection{支撑材料清单}
+\begin{thebibliography}{9}
+\bibitem{crank} Crank J. \textit{The Mathematics of Diffusion}. 2nd ed. Oxford: Clarendon Press, 1975.
+\bibitem{patankar} Patankar S V. \textit{Numerical Heat Transfer and Fluid Flow}. New York: Hemisphere, 1980.
+\bibitem{hairer} Hairer E, Wanner G. \textit{Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems}. 2nd ed. Berlin: Springer, 1996.
+\bibitem{incropera} Incropera F P, DeWitt D P, Bergman T L, Lavine A S. \textit{Fundamentals of Heat and Mass Transfer}. 6th ed. Hoboken: Wiley, 2007.
+\bibitem{mujumdar} Mujumdar A S, ed. \textit{Handbook of Industrial Drying}. 4th ed. Boca Raton: CRC Press, 2014.
+\end{thebibliography}
+
+\section*{支撑材料清单}
 本文的支撑材料采用“输入数据—模块化数值求解—结果输出—独立校验”的结构，提交包位于 \texttt{A题\_支撑材料\_提交版/}，主要内容如下：
 \begingroup\small\raggedright
 \begin{enumerate}[label=(\arabic*)]
@@ -1118,13 +1138,5 @@ $D$ 增大 $10\%$ & $-8.03\%$ & $-7.88\%$ &\\
 \end{enumerate}
 在提交包根目录执行 \texttt{python run\_all.py} 可完成四问求解、结果导出、图表生成、敏感性分析与完整性校验；若仅复现四问和图表，可使用 \texttt{python run\_all.py --skip-sensitivity}。
 \endgroup
-
-\begin{thebibliography}{9}
-\bibitem{crank} Crank J. \textit{The Mathematics of Diffusion}. 2nd ed. Oxford: Clarendon Press, 1975.
-\bibitem{patankar} Patankar S V. \textit{Numerical Heat Transfer and Fluid Flow}. New York: Hemisphere, 1980.
-\bibitem{hairer} Hairer E, Wanner G. \textit{Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems}. 2nd ed. Berlin: Springer, 1996.
-\bibitem{incropera} Incropera F P, DeWitt D P, Bergman T L, Lavine A S. \textit{Fundamentals of Heat and Mass Transfer}. 6th ed. Hoboken: Wiley, 2007.
-\bibitem{mujumdar} Mujumdar A S, ed. \textit{Handbook of Industrial Drying}. 4th ed. Boca Raton: CRC Press, 2014.
-\end{thebibliography}
 
 \end{document}
