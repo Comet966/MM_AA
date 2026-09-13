@@ -1061,11 +1061,11 @@ $D$ 增大 $10\%$ & $-8.03\%$ & $-7.88\%$ &\\
 
 \subsection{几何收缩机制解耦讨论}
 \label{sec:mechanism_decoupling}
-在问题4中，烘干进程受到“物性改变”与“半径收缩”的双重耦合影响。为清晰辨识各自的贡献，设立三组对照算例开展解耦分析（见图\ref{fig:shrinkage}与图\ref{fig:radius_comp}）：
+在问题4中，烘干进程受到“物性改变”与“半径收缩”的双重耦合影响。为辨识各因素的贡献，设立三组对照进行解耦分析（见图\ref{fig:shrinkage}与图\ref{fig:radius_comp}）：
 
 \begin{table}[H]
 \centering
-\caption{几何收缩机制解耦算例汇总}
+\caption{几何收缩机制解耦算例}
 \label{tab:decoupling_cases}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -1074,11 +1074,11 @@ $D$ 增大 $10\%$ & $-8.03\%$ & $-7.88\%$ &\\
                 >{\centering\arraybackslash}p{2.6cm}
                 >{\raggedright\arraybackslash}p{5.0cm}}
 \toprule
-算例 & 物性与几何条件 & 达标时长 & 对照评价 \\
+算例 & 条件 & 达标时长 & 评价 \\
 \midrule
-A（基准） & 附录3物性，固定半径 2 cm & \QThreeDryHours\ h & 作为问题3基准结果 \\
-B（物性置换） & 附录4物性，固定半径 2 cm & \AppendixFourFixedHours\ h & 相比算例 A 增加 \AppendixIncrease，内部扩散阻力显著增大 \\
-C（完整收缩） & 附录4物性，计入实测动态收缩 & \QFourDryHours\ h & 相比算例 B 缩短 77.3 h，降幅 \ShrinkReduction，整体速率提升 2.47 倍 \\
+A & 附录3物性，固定半径 2 cm & \QThreeDryHours\ h & 作为问题3基准结果 \\
+B & 附录4物性，固定半径 2 cm & \AppendixFourFixedHours\ h & 相比 A 增加 \AppendixIncrease，内部扩散阻力显著增大 \\
+C & 附录4物性，半径动态收缩 & \QFourDryHours\ h & 相比 B 缩短 77.3 h，降幅 \ShrinkReduction，整体速率提升 2.47 倍 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1087,7 +1087,7 @@ C（完整收缩） & 附录4物性，计入实测动态收缩 & \QFourDryHours\
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.82\textwidth]{shrinkage_effect.png}
-\caption{附录4物性下固定半径（130.02 h）与动态收缩（52.72 h）的干燥历程对比}\label{fig:shrinkage}
+\caption{附录4物性下固定半径与动态收缩的干燥历程对比}\label{fig:shrinkage}
 \end{figure}
 \begin{figure}[H]
 \centering
@@ -1101,7 +1101,7 @@ C（完整收缩） & 附录4物性，计入实测动态收缩 & \QFourDryHours\
   \item \textbf{框架高度统一可复用}：四问严格共享同一组热质耦合方程组，和同一套空间半离散线数值计算方法，仅需切换对应的物性函数与边界条件，算法架构整洁优美；
   \item \textbf{自然满足通量条件}：空间离散采用有限体积法，内部界面通量形成严格的望远镜级数对消，机器浮点精度级别满足质量与能量守恒；
   \item \textbf{超刚性方程的高效求解}：引入两场三点紧凑模式的稀疏雅可比矩阵优化（CSR），配合自适应高阶 BDF 隐式积分推进，在保证绝对数值稳定性的前提下，实现长达 72 h 跨度物理全过程的秒级极速求解；
-  \item \textbf{移动边界处理兼备严格性与实用性}：通过 Landau 相对坐标归一化彻底规避了动网格重划分的插值误差，完整保留了几何收缩双重机制，并构建了连续事件与 60 s 输出网格双重达标判定体系。
+  \item \textbf{移动边界处理兼备严格性与实用性}：通过 Landau 相对坐标归一化彻底规避了动网格重划分的插值误差，保留了几何收缩双重机制，并构建了连续事件与 60 s 输出网格双重达标判定体系。
 \end{enumerate}
 
 \subsubsection{局限性与工业优化改进方向}
@@ -1117,6 +1117,9 @@ C（完整收缩） & 附录4物性，计入实测动态收缩 & \QFourDryHours\
   \item 问题3固定半径下的全域烘干达标时刻为 \QThreeDryHours\ h（约 2.40 d）；问题4在附录4物性与动态收缩下的达标时刻为 \QFourDryHours\ h（约 2.20 d），终点尺寸为 \QFourDryRadius\ cm；
   \item 几何收缩是克服材料内部大扩散阻力的最关键驱动机制，能使干燥整体提速达 2.47 倍。
 \end{enumerate}
+
+\section*{AI 工具使用声明}
+本参赛队在竞赛过程中使用了 AI 工具，主要用于【资料整理，代码调试】，详细使用情况见支撑材料。
 
 \begin{thebibliography}{9}
 \bibitem{crank} Crank J. \textit{The Mathematics of Diffusion}. 2nd ed. Oxford: Clarendon Press, 1975.
