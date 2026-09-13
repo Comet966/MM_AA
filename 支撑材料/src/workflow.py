@@ -84,7 +84,7 @@ def run_all(write_excel: bool = True) -> dict:
     output_r_cm = np.round(np.arange(0.0, 2.0 + 0.05, 0.1), 1)
     output_r_m = output_r_cm / 100.0
     if write_excel:
-        print("[6/8] 填写四个 Excel 结果模板", flush=True)
+        print("[6/8] 在根目录写出四个 Excel 结果工作簿", flush=True)
         q1_times = np.arange(1.0, 1800.0 + 1.0, 1.0)
         q1_t, q1_c = sample_fixed(q1, q1_times, output_r_m)
         write_two_sheet_result(TEMPLATE_DIR / "result1.xlsx", q1_times, output_r_cm, q1_t, q1_c)

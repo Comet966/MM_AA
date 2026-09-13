@@ -38,9 +38,9 @@
   },
   "strict_threshold": {
     "question3_time_s": 207300.0,
-    "question3_raw_max": 0.14998444058619312,
+    "question3_raw_max": 0.14998444101256167,
     "question4_time_s": 189780.0,
-    "question4_raw_max": 0.1499940662581558
+    "question4_raw_max": 0.14999391743409946
   },
   "figures": {
     "count": 10,

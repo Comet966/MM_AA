@@ -1,0 +1,23 @@
+{
+  "source_data": [
+    "data/附件1.xlsx",
+    "data/附件2.xlsx",
+    "result/summary.json"
+  ],
+  "solver": "src/drying_solver.py",
+  "figure_builder": "rebuild_figures.py",
+  "raster_dpi": 600,
+  "figures": [
+    "question1_profiles.png",
+    "question1_heatmaps.png",
+    "question2_profiles.png",
+    "question2_heatmaps.png",
+    "drying_threshold.png",
+    "question3_heatmaps.png",
+    "question4_heatmaps.png",
+    "grid_convergence.png",
+    "shrinkage_effect.png",
+    "radius_and_comparison.png"
+  ],
+  "notes": "论文图由支撑材料中的原始数据和数值解重新生成；温度场采用低温浅、高温深的连续色标，最高温端为 #5202a3；水分浓度场同样为低值浅、高值深。drying_threshold 仅保留问题3，radius_and_comparison 采用论文最终三模型方案。"
+}

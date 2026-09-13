@@ -9,39 +9,39 @@
     "at_72h_cm": 1.198
   },
   "drying_time": {
-    "question3_continuous_threshold_s": 207246.4256174819,
-    "question3_continuous_threshold_h": 57.56845156041164,
+    "question3_continuous_threshold_s": 207246.42722770266,
+    "question3_continuous_threshold_h": 57.568452007695186,
     "question3_safe_60s_output_s": 207300.0,
     "question3_safe_60s_output_h": 57.583333333333336,
     "question3_first_displayed_below_s": 207420.0,
     "question3_first_displayed_below_h": 57.61666666666667,
-    "question4_continuous_threshold_s": 189768.4261545761,
-    "question4_continuous_threshold_h": 52.71345170960447,
+    "question4_continuous_threshold_s": 189768.13585473743,
+    "question4_continuous_threshold_h": 52.713371070760395,
     "question4_safe_60s_output_s": 189780.0,
     "question4_safe_60s_output_h": 52.71666666666667,
     "question4_first_displayed_below_s": 189900.0,
     "question4_first_displayed_below_h": 52.75,
-    "appendix4_fixed_h": 130.00682512335993,
-    "question4_without_geometry_term_h": 51.14698068990125
+    "appendix4_fixed_h": 130.00682674573883,
+    "question4_without_geometry_term_h": 51.14698947144579
   },
   "threshold_check": {
-    "question3_safe_60s_output_raw_max": 0.14998444058619312,
+    "question3_safe_60s_output_raw_max": 0.14998444101256167,
     "question3_safe_60s_output_rounded_4dp": 0.15,
-    "question3_previous_60s_output_raw_max": 0.15000186668586887,
-    "question3_first_displayed_below_raw_max": 0.14994961715132332,
-    "question3_60s_before": 0.1500174347218556,
-    "question3_30min_after": 0.14948139473639716,
-    "question4_safe_60s_output_raw_max": 0.1499940662581558,
+    "question3_previous_60s_output_raw_max": 0.15000186715678493,
+    "question3_first_displayed_below_raw_max": 0.1499496175807468,
+    "question3_60s_before": 0.15001743473825602,
+    "question3_30min_after": 0.14948139470877708,
+    "question4_safe_60s_output_raw_max": 0.14999391743409946,
     "question4_safe_60s_output_rounded_4dp": 0.15,
-    "question4_previous_60s_output_raw_max": 0.15002483677501288,
-    "question4_first_displayed_below_raw_max": 0.14993259498506012,
-    "question4_60s_before": 0.1500307750070308,
-    "question4_30min_after": 0.14908744676214372
+    "question4_previous_60s_output_raw_max": 0.1500246878524847,
+    "question4_first_displayed_below_raw_max": 0.1499324463553745,
+    "question4_60s_before": 0.15003077502167253,
+    "question4_30min_after": 0.14908744633345622
   },
   "abstract_metrics": {
     "question1_at_1800s": {
-      "center_temperature_c": 33.57539431803684,
-      "surface_temperature_c": 36.78587752040795,
+      "center_temperature_c": 33.575394318036956,
+      "surface_temperature_c": 36.78587752040801,
       "center_moisture": 2.5499922677901408,
       "surface_moisture": 1.5102554115971523
     },
@@ -53,33 +53,33 @@
     },
     "question3_surface_safe_60s_s": 45180.0,
     "question3_surface_safe_60s_h": 12.55,
-    "question3_surface_safe_raw_moisture": 0.14990763032473603,
+    "question3_surface_safe_raw_moisture": 0.1499076303244827,
     "question3_center_to_surface_drying_time_ratio": 4.588313413014609,
     "question3_center_minus_surface_drying_time_h": 45.03333333333333,
-    "question3_center_to_surface_moisture_ratio_at_finish": 2.8555733613611003,
+    "question3_center_to_surface_moisture_ratio_at_finish": 2.855573368059614,
     "question4_radius_at_finish_cm": 1.2,
     "appendix4_fixed_safe_60s_s": 468060.0,
     "appendix4_fixed_safe_60s_h": 130.01666666666668,
-    "appendix4_fixed_safe_raw_moisture": 0.14999345382762752,
+    "appendix4_fixed_safe_raw_moisture": 0.14999345490669358,
     "question4_time_reduction_vs_fixed_h": 77.3,
     "question4_time_reduction_vs_fixed_percent": 59.453916164594276,
     "question4_drying_speed_ratio_vs_fixed": 2.466329434081568
   },
   "grid_convergence": {
-    "question1_max_temperature_difference_81_vs_321_at_1800s_K": 0.0012047674427435595,
-    "question1_max_moisture_difference_81_vs_321_at_1800s": 0.0001878469434473118,
-    "question1_max_temperature_difference_161_vs_321_at_1800s_K": 0.0004984896962128005,
+    "question1_max_temperature_difference_81_vs_321_at_1800s_K": 0.001204767442004595,
+    "question1_max_moisture_difference_81_vs_321_at_1800s": 0.00018784694344553543,
+    "question1_max_temperature_difference_161_vs_321_at_1800s_K": 0.0004984896960991136,
     "question1_max_moisture_difference_161_vs_321_at_1800s": 3.945262830140628e-05,
-    "question2_max_temperature_difference_101_vs_401_at_3h_K": 1.412406328427096e-05,
-    "question2_max_moisture_difference_101_vs_401_at_3h": 1.5085321660945894e-05,
-    "question2_max_temperature_difference_201_vs_401_at_3h_K": 0.00013247063390053881,
-    "question2_max_moisture_difference_201_vs_401_at_3h": 6.675452686621952e-06,
-    "question3_dry_time_h_401_nodes": 57.75055117939995,
-    "question3_dry_time_h_801_nodes": 57.56845156041164,
-    "question3_dry_time_h_1201_nodes": 57.54386408349499,
-    "question4_dry_time_h_321_nodes": 52.736590641280806,
-    "question4_dry_time_h_601_nodes": 52.71345170960447,
-    "question4_dry_time_h_801_nodes": 52.709656160541364
+    "question2_max_temperature_difference_101_vs_401_at_3h_K": 1.4128033001270524e-05,
+    "question2_max_moisture_difference_101_vs_401_at_3h": 1.5085301463102496e-05,
+    "question2_max_temperature_difference_201_vs_401_at_3h_K": 0.00013246683204215515,
+    "question2_max_moisture_difference_201_vs_401_at_3h": 6.675360337160541e-06,
+    "question3_dry_time_h_401_nodes": 57.75056040736252,
+    "question3_dry_time_h_801_nodes": 57.568452007695186,
+    "question3_dry_time_h_1201_nodes": 57.543863533982964,
+    "question4_dry_time_h_321_nodes": 52.73659065171272,
+    "question4_dry_time_h_601_nodes": 52.713371070760395,
+    "question4_dry_time_h_801_nodes": 52.70965615996936
   },
   "paper_tables": {
     "question1": {
@@ -431,7 +431,7 @@
       ],
       "moisture_at_fixed_distances": [
         [
-          1.9539,
+          1.9538,
           1.7844,
           1.2585,
           null
@@ -512,8 +512,8 @@
       "njev": 31
     },
     "问题四": {
-      "nfev": 5036,
-      "njev": 126
+      "nfev": 5045,
+      "njev": 129
     }
   }
 }

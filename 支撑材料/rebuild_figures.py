@@ -20,7 +20,7 @@ BLACK = '#1F2937'
 LIGHT_GRID = '#D9DEE7'
 
 def configure_style() -> None:
-    plt.rcParams.update({'font.family': 'sans-serif', 'font.sans-serif': ['Microsoft YaHei', 'Noto Sans CJK SC', 'SimHei', 'Arial', 'DejaVu Sans'], 'font.size': 8.2, 'axes.titlesize': 9.5, 'axes.labelsize': 8.8, 'axes.linewidth': 0.8, 'axes.edgecolor': BLACK, 'axes.labelcolor': BLACK, 'axes.unicode_minus': False, 'xtick.labelsize': 7.7, 'ytick.labelsize': 7.7, 'xtick.color': BLACK, 'ytick.color': BLACK, 'xtick.major.width': 0.8, 'ytick.major.width': 0.8, 'xtick.major.size': 3.2, 'ytick.major.size': 3.2, 'legend.fontsize': 7.5, 'legend.frameon': False, 'lines.linewidth': 1.35, 'savefig.facecolor': 'white', 'figure.facecolor': 'white', 'svg.fonttype': 'path', 'pdf.fonttype': 42, 'ps.fonttype': 42})
+    plt.rcParams.update({'font.family': 'sans-serif', 'font.sans-serif': ['PingFang SC', 'STHeiti', 'Songti SC', 'Microsoft YaHei', 'Noto Sans CJK SC', 'SimHei', 'Arial Unicode MS', 'Arial', 'DejaVu Sans'], 'font.size': 8.2, 'axes.titlesize': 9.5, 'axes.labelsize': 8.8, 'axes.linewidth': 0.8, 'axes.edgecolor': BLACK, 'axes.labelcolor': BLACK, 'axes.unicode_minus': False, 'xtick.labelsize': 7.7, 'ytick.labelsize': 7.7, 'xtick.color': BLACK, 'ytick.color': BLACK, 'xtick.major.width': 0.8, 'ytick.major.width': 0.8, 'xtick.major.size': 3.2, 'ytick.major.size': 3.2, 'legend.fontsize': 7.5, 'legend.frameon': False, 'lines.linewidth': 1.35, 'savefig.facecolor': 'white', 'figure.facecolor': 'white', 'svg.fonttype': 'path', 'pdf.fonttype': 42, 'ps.fonttype': 42})
 
 def clean_axis(ax: plt.Axes, grid: bool=True) -> None:
     ax.spines['top'].set_visible(False)

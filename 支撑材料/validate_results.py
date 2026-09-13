@@ -10,8 +10,9 @@ from openpyxl import load_workbook
 
 
 ROOT = Path(__file__).resolve().parent
+WORKBOOK_DIR = ROOT
 RESULT_DIR = ROOT / "result"
-FIGURE_DIR = ROOT / "report" / "figures"
+FIGURE_DIR = ROOT / "figures"
 
 EXPECTED_WORKBOOKS = {
     "result1.xlsx": {"sheets": ["温度", "水分浓度"], "rows": 1801, "cols": 22, "first_time": 1, "last_time": 1800},
@@ -42,7 +43,7 @@ def check(condition: bool, message: str) -> None:
 
 
 def validate_workbook(name: str, spec: dict) -> dict:
-    path = RESULT_DIR / name
+    path = WORKBOOK_DIR / name
     check(path.is_file(), f"缺少结果文件：{path}")
     wb = load_workbook(path, read_only=True, data_only=True)
     try:
