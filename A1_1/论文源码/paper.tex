@@ -558,7 +558,7 @@ D_1(C)&=7.0\times10^{-9}\exp\!\left(-\frac{0.89}{C}\right)\ \mathrm{m^2/s}.
 \subsubsection{模型求解}
 附件1只给出了若干时刻的烘房环境数据。首先采用分段线性插值得到连续的边界函数 $T_a(t)$ 和 $C_a(t)$，并将环境温度换算为绝对温度。
 
-随后使用有限体积法离散径向空间。将药材半径均分为160段，共设置161个径向节点：
+随后使用有限体积法使径向空间离散化，将药材半径均分为160段，共设置161个径向节点：
 \begin{equation}
 r_i=i\Delta r,\qquad \Delta r=\frac{R}{N}=1.25\times10^{-4}\ \mathrm m
 =0.0125\ \mathrm{cm},\qquad i=0,1,\ldots,N.
@@ -925,7 +925,7 @@ $207300\ \mathrm{s}$。由于中心处的水分浓度下降最慢，因而只有
 \subsection{问题4：收缩域下的干燥终点}
 
 \subsubsection{模型建立}
-问题4采用附录4的物性函数
+问题4在问题3的基础上进一步考虑药材失水引起的径向收缩。与固定半径模型相比，本问一方面采用附录4给出的新物性关系，另一方面将常数半径 $R$ 改为随时间变化的 $R(t)$。附录4的物性函数为
 \begin{equation}
 \begin{aligned}
 \rho_4(C)&=760+90C,\\
@@ -936,55 +936,99 @@ D_4(C,T)&=4.2\times10^{-4}
 \exp\!\left(-\frac{3850}{T}\right).
 \end{aligned}\label{eq:q4_properties}
 \end{equation}
-同时半径按附件2数据随时间收缩。为避免移动网格，引入相对坐标
-\begin{equation}
-\xi=\frac{r}{R(t)},\qquad 0\le\xi\le1,
-\end{equation}
-并在相邻测量点 $(t_j,R_j)$ 间令
+
+附件2给出了不同时刻的药材半径。计算时将时间统一换算为秒、半径统一换算为米，并在相邻测量点 $(t_j,R_j)$ 之间作分段线性插值：
 \begin{equation}
 R(t)=R_j+\frac{R_{j+1}-R_j}{t_{j+1}-t_j}(t-t_j),\qquad
 \dot R(t)=\frac{R_{j+1}-R_j}{t_{j+1}-t_j}.
+\label{eq:q4_radius_interp}
 \end{equation}
-由
-$\left.\partial_t\phi\right|_r=\left.\partial_t\phi\right|_\xi-
-\xi(\dot R/R)\partial_\xi\phi$ 和
-$\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
-\begin{align}
-\frac{\partial T}{\partial t}
-&=\xi\frac{\dot R}{R}\frac{\partial T}{\partial\xi}
-+\frac{1}{\rho_4c_{p4}R^2\xi}
-\frac{\partial}{\partial\xi}\!\left(\xi k_4\frac{\partial T}{\partial\xi}\right),
-\label{eq:movingT}\\
-\frac{\partial C}{\partial t}
-&=\xi\frac{\dot R}{R}\frac{\partial C}{\partial\xi}
-+\frac{1}{R^2\xi}
-\frac{\partial}{\partial\xi}\!\left(\xi D_4\frac{\partial C}{\partial\xi}\right).
-\label{eq:movingC}
-\end{align}
-在 $\xi=0$ 处取对称边界，在 $\xi=1$ 处联立
+由于物理区域 $0\le r\le R(t)$ 会随时间变化，若直接使用固定的 $r$ 网格，外层节点将不断移出药材。为此，引入相对坐标
 \begin{equation}
--\frac{k_4}{R}\frac{\partial T}{\partial\xi}=h(T_s-T_a),\qquad
--\frac{D_4}{R}\frac{\partial C}{\partial\xi}=h_m(C_s-C_a),
+\xi=\frac{r}{R(t)},\qquad 0\le\xi\le1,
+\label{eq:q4_xi}
 \end{equation}
-并沿用式\eqref{eq:q3_event}的终止条件。
+从而将收缩区域映射到固定区间。对温度或水分场 $\phi=T,C$，定义 $\widetilde\phi(\xi,t)=\phi(\xi R(t),t)$。由链式法则可得
+\begin{equation}
+\left.\frac{\partial\phi}{\partial t}\right|_r
+=\left.\frac{\partial\widetilde\phi}{\partial t}\right|_\xi
+-\xi\frac{\dot R}{R}\frac{\partial\widetilde\phi}{\partial\xi},
+\qquad
+\frac{\partial\phi}{\partial r}
+=\frac{1}{R}\frac{\partial\widetilde\phi}{\partial\xi}.
+\label{eq:q4_chain_rule}
+\end{equation}
+为简化记号，后文仍以 $T$ 和 $C$ 表示映射后的温度场与水分场。将式\eqref{eq:q4_chain_rule}代入第五章的一维径向模型，得到固定计算域上的完整初边值问题：
+\begin{equation}
+\left\{
+\begin{array}{@{}l@{\quad}l@{}}
+\text{传热方程：} &
+\displaystyle \frac{\partial T}{\partial t}
+=\xi\frac{\dot R}{R}\frac{\partial T}{\partial\xi}
++\frac{1}{\rho_4(C)c_{p4}(C)R^2\xi}
+\frac{\partial}{\partial\xi}\!\left(\xi k_4(C)\frac{\partial T}{\partial\xi}\right),\\[12pt]
+\text{传质方程：} &
+\displaystyle \frac{\partial C}{\partial t}
+=\xi\frac{\dot R}{R}\frac{\partial C}{\partial\xi}
++\frac{1}{R^2\xi}
+\frac{\partial}{\partial\xi}\!\left(\xi D_4(C,T)\frac{\partial C}{\partial\xi}\right),\\[12pt]
+\text{中心对称条件：} &
+\displaystyle \left.\frac{\partial T}{\partial\xi}\right|_{\xi=0}
+=\left.\frac{\partial C}{\partial\xi}\right|_{\xi=0}=0,\\[12pt]
+\text{表面对流换热：} &
+\displaystyle -\frac{k_4(C_s)}{R}
+\left.\frac{\partial T}{\partial\xi}\right|_{\xi=1}
+=h(T_s-T_a),\\[12pt]
+\text{表面对流传质：} &
+\displaystyle -\frac{D_4(C_s,T_s)}{R}
+\left.\frac{\partial C}{\partial\xi}\right|_{\xi=1}
+=h_m(C_s-C_a),\\[12pt]
+\text{初始条件：} &
+\displaystyle T(\xi,0)=301.15\ \mathrm K,\qquad
+C(\xi,0)=2.55,\qquad R(0)=0.02\ \mathrm m.
+\end{array}
+\right.
+\label{eq:q4_system}
+\raisetag{1.5\baselineskip}
+\end{equation}
+问题4仍以药材全域水分浓度均低于 $0.15\ \mathrm{kg/kg}$ 作为完成标准。因此沿用问题3的判停思想，令
+\begin{equation}
+g_4(t)=\max_{0\le\xi\le1}C(\xi,t)-0.15,
+\label{eq:q4_event}
+\end{equation}
+事件函数第一次到达零点时即得到连续理论干燥终点。
 
 \subsubsection{模型求解}
-采用601个相对坐标节点，将温度场和水分场在固定区间 $0\le\xi\le1$ 上作有限体积离散，再使用与前三问相同的BDF流程求解。计算过程中根据附件2实时更新 $R(t)$ 与 $\dot R(t)$，并计入收缩引起的几何输运项。
+问题4继续沿用前述有限体积--BDF框架，只需在每次时间推进时同步更新半径和收缩输运项。具体步骤如下：
+
+\noindent\textbf{Step1：}将固定区间 $0\le\xi\le1$ 均匀划分为601个节点。由于计算网格建立在相对坐标上，节点位置不会随药材收缩而改变。
+
+\noindent\textbf{Step2：}每次计算方程右端项时，先由式\eqref{eq:q4_radius_interp}更新 $R(t)$ 与 $\dot R(t)$，再根据当前节点的 $T_i$、$C_i$ 计算附录4物性。扩散项采用有限体积法离散，界面物性仍取调和平均；收缩产生的输运项在内部节点采用中心差分：
+\begin{equation}
+\left.\frac{\partial\phi}{\partial\xi}\right|_{\xi_i}
+\approx\frac{\phi_{i+1}-\phi_{i-1}}{2\Delta\xi},
+\qquad \phi=T,C.
+\label{eq:q4_geometry_discrete}
+\end{equation}
+
+\noindent\textbf{Step3：}将全部节点的温度和水分浓度组成状态向量，交由BDF求解器推进，并通过事件函数\eqref{eq:q4_event}连续定位干燥终点。随后在 $60\ \mathrm s$ 输出网格上复核，取首个满足全域水分浓度严格低于阈值的时刻作为最终结果。
+
+\noindent\textbf{Step4：}输出题目要求的物理位置时，按 $\xi_j(t)=r_j/R(t)$ 将固定物理坐标映射回相对网格。若 $r_j>R(t)$，说明该位置已经处于收缩后的药材外部，相应结果留空；药材表面始终对应 $\xi=1$。完整结果按每隔 $60\ \mathrm s$、每隔 $0.1\ \mathrm{cm}$ 的间隔写入 \texttt{result4.xlsx}。
 
 \subsubsection{计算结果与分析}
-连续临界时刻为52.7135 h；60 s输出网格上的安全达标时刻及对应半径为
+由事件函数得到的连续临界时刻为 $52.7135\ \mathrm h$。在 $60\ \mathrm s$ 输出网格上继续复核，首个安全达标时刻及对应半径为
 \begin{equation}
 \boxed{t_4=189780\ \mathrm{s}=\QFourDryHours\ \mathrm{h}\approx2.20\ \mathrm{d}},
 \qquad R(t_4)=\QFourDryRadius\ \mathrm{cm}.
 \end{equation}
-此时全域最大含水率为0.149994。固定物理采样点若满足 $r_j>R(t)$，则已位于收缩后的外部空气域，按题意在表格中留空；“药材表面”列始终取 $\xi=1$ 处的值。结果见图\ref{fig:q4_heatmaps}，机理对照见第\ref{sec:mechanism_decoupling}节。
+此时全域最大水分浓度为 $0.149994\ \mathrm{kg/kg}$，满足题目规定的严格阈值。表\ref{tab:q4}给出了每隔 $6\ \mathrm h$ 及最终达标时刻的代表性结果。
 
 \begin{table}[H]
 \centering
 \caption{问题4每6 h及达标时刻的水分浓度}\label{tab:q4}
 \begin{tabular}{rrrrrr}
 \toprule
-时间/h & 半径/cm & 0 cm & 0.5 cm & 1.0 cm & 药材表面 \\
+时间/h & 药材半径/cm & 0 cm & 0.5 cm & 1.0 cm & 药材表面 \\
 \midrule
 6 & 1.3740 & 1.9539 & 1.7844 & 1.2585 & 0.5678 \\
 12 & 1.2480 & 0.8748 & 0.7776 & 0.4866 & 0.2147 \\
@@ -999,11 +1043,17 @@ $\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
 \end{tabular}
 \end{table}
 
+由表\ref{tab:q4}可见，药材半径由初始的 $2\ \mathrm{cm}$ 快速收缩至 $6\ \mathrm h$ 时的 $1.374\ \mathrm{cm}$，并在 $36\ \mathrm h$ 左右基本稳定于 $1.2\ \mathrm{cm}$。在整个过程中，水分浓度始终呈现中心高、表面低的径向分布。达到安全终点时，中心、$0.5\ \mathrm{cm}$ 处和表面的水分浓度分别为 $0.1500$、$0.1413$ 和 $0.0525\ \mathrm{kg/kg}$，说明问题4的干燥终点仍由中心位置控制。
+
+相较问题3的 $57.5833\ \mathrm h$，问题4的安全达标时刻缩短约 $4.87\ \mathrm h$，总体降幅为 \NetReduction。该差值包含物性变化与几何收缩的共同影响，二者的独立贡献见第\ref{sec:mechanism_decoupling}节。
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{question4_heatmaps.png}
 \caption{问题4移动物理域温湿场时空演化热力图（白色区域为药材收缩后的外部空间）}\label{fig:q4_heatmaps}
 \end{figure}
+
+图\ref{fig:q4_heatmaps}显示，温度场较早趋于均匀，而水分浓度在较长时间内仍保持明显的径向梯度。图中白色区域随时间逐渐扩大，对应药材半径缩小后退出计算物理域的部分，这与附件2记录的收缩过程相一致。
 
 \section{模型检验与评价}
 
