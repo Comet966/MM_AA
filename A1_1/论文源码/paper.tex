@@ -204,6 +204,7 @@ $D$ & 水分有效扩散系数 & $\mathrm{m^2/s}$\\
 $h$ & 表面对流换热系数 & $\mathrm{W/(m^2\cdot K)}$\\
 $h_m$ & 表面对流传质系数 & m/s\\
 $N$ & 径向网格划分区间数 & --\\
+$F_{i+1/2}$ & 控制体界面的径向扩散通量 & $\mathrm{W/m}$ 或 $\mathrm{m^2/s}$\\
 $\omega_i^r$ & 物理控制体几何权重 & $\mathrm{m^2}$\\
 $\omega_i^\xi$ & 相对坐标控制体几何权重 & --\\
 $\Gamma$ & 广义界面传递系数 & $\mathrm{W/(m\cdot K)}$ 或 $\mathrm{m^2/s}$\\
@@ -579,7 +580,7 @@ q_i\omega_i^r\frac{d\phi_i}{dt}=F_{i+1/2}-F_{i-1/2},\qquad
 F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}
 \frac{\phi_{i+1}-\phi_i}{\Delta r},\label{eq:fvm-r}
 \end{equation}
-其中，控制体的几何权重和界面传递系数分别为
+其中，$F_{i\pm1/2}$ 表示穿过控制体界面的广义径向扩散通量（即引入柱坐标半径加权后的界面导热热流或水分扩散通量），控制体的几何权重和界面传递系数分别为
 \begin{equation}
 \omega_i^r=\frac{r_{i+1/2}^2-r_{i-1/2}^2}{2},\qquad
 \Gamma_{i+1/2}=\frac{2\Gamma_i\Gamma_{i+1}}{\Gamma_i+\Gamma_{i+1}}.
