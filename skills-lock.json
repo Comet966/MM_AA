@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "paper-lookup": {
+      "source": "K-Dense-AI/scientific-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/paper-lookup/SKILL.md",
+      "computedHash": "c66ababfeae466e421c645a2fb22477187c373609390a3303f5d5391b81208d2"
+    }
+  }
+}

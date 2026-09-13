@@ -1,12 +1,18 @@
 \documentclass[12pt,a4paper,fontset=none]{ctexart}
-\setCJKmainfont[
-  Path=/System/Library/Fonts/Supplemental/,
-  FontIndex=4,
-  BoldFont={Songti.ttc},
-  BoldFeatures={Path=/System/Library/Fonts/Supplemental/, FontIndex=1}
-]{Songti.ttc}
-\setCJKsansfont[Path=/System/Library/Fonts/]{STHeiti Medium.ttc}
-\setCJKmonofont[Path=/System/Library/Fonts/]{STHeiti Light.ttc}
+\IfFileExists{/System/Library/Fonts/Supplemental/Songti.ttc}{
+  \setCJKmainfont[
+    Path=/System/Library/Fonts/Supplemental/,
+    FontIndex=4,
+    BoldFont={Songti.ttc},
+    BoldFeatures={Path=/System/Library/Fonts/Supplemental/, FontIndex=1}
+  ]{Songti.ttc}
+  \setCJKsansfont[Path=/System/Library/Fonts/]{STHeiti Medium.ttc}
+  \setCJKmonofont[Path=/System/Library/Fonts/]{STHeiti Light.ttc}
+}{
+  \setCJKmainfont[Path=C:/Windows/Fonts/,BoldFont=simhei.ttf]{simsun.ttc}
+  \setCJKsansfont[Path=C:/Windows/Fonts/]{simhei.ttf}
+  \setCJKmonofont[Path=C:/Windows/Fonts/]{simkai.ttf}
+}
 \usepackage[a4paper,top=25mm,bottom=25mm,left=25mm,right=25mm,headheight=15pt]{geometry}
 \usepackage{amsmath,amssymb,bm,booktabs,longtable,array,tabularx,multirow}
 \usepackage{graphicx,float,subcaption,xcolor,hyperref,fancyhdr,enumitem,tikz}
@@ -61,18 +67,18 @@
 \setstretch{1.08}
 药材烘干过程同时涉及内部的热传导、水分扩散和表面的对流换热、传质，并伴随材料物性及几何尺寸的变化。如何准确描述药材内部温度与水分浓度的演化，进而确定满足要求的烘干时长，是优化烘干工艺、降低能耗并保证产品品质的关键。本文将药材视为细长圆柱体，忽略轴向梯度，建立一维径向热质传递模型；然后采用有限体积法完成空间离散，将偏微分方程组降维成常微分方程组，并利用后向差分公式（BDF）进行自适应时间积分。在此基础上，依次研究恒定物理性质、非线性热质耦合、烘干终止判定以及半径动态收缩条件下的数值求解问题。
 
-\problem{一}首先根据圆柱药材长度较长的特征，将温度和水分浓度近似为仅随径向位置和时间变化的函数，建立线性热传导方程与扩散系数随含水率变化的非线性水分扩散方程。在圆心处设置对称边界，并在表面设置对流换热、传质的 Robin 边界条件。利用附件中的烘房温度和水分浓度数据构造分段线性插值函数，用有限体积法把半径离散，再通过 BDF 求解离散后的常微分方程组，得到\textbf{$0\sim1800\,\mathrm{s}$}内药材各径向位置的温度与水分浓度变化规律。计算表明，预热过程中药材表面温度上升快于中心温度，水分浓度呈现中心高、表面低的径向分布。在\textbf{$t=1800\,\mathrm{s}$}时，对应 $r=(0,\,0.5,\,1.0,\,1.5,\,2.0)\,\mathrm{cm}$ 处的计算结果为：温度向量 \textbf{\boldmath$\bm T_{1800}=(33.5754,\allowbreak\, 33.7721,\allowbreak\, 34.3641,\allowbreak\, 35.3622,\allowbreak\, 36.7859)\,{}^\circ\mathrm C$}；含水率向量 \textbf{\boldmath$\bm C_{1800}=(2.5500,\allowbreak\, 2.5497,\allowbreak\, 2.5383,\allowbreak\, 2.3755,\allowbreak\, 1.5103)\,\mathrm{kg/kg}$}。
+\problem{一}首先根据圆柱药材长度较长的特征，将温度和水分浓度近似为仅随径向位置和时间变化的函数，建立线性热传导方程与扩散系数随含水率变化的非线性水分扩散方程。在圆心处设置对称边界，并在表面设置对流换热、传质的 Robin 边界条件。利用附件中的烘房温度和水分浓度数据构造分段线性插值函数，用有限体积法把半径离散，再通过 BDF 求解离散后的常微分方程组，得到\textbf{\boldmath$0\sim1800\,\mathrm{s}$}内药材各径向位置的温度与水分浓度变化规律。计算表明，预热过程中药材表面温度上升快于中心温度，水分浓度呈现中心高、表面低的径向分布。在\textbf{\boldmath$t=1800\,\mathrm{s}$}时，对应 $r=(0,\,0.5,\,1.0,\,1.5,\,2.0)\,\mathrm{cm}$ 处的计算结果为：温度向量 \textbf{\boldmath$\bm T_{1800}=(33.5754,\allowbreak\, 33.7721,\allowbreak\, 34.3641,\allowbreak\, 35.3622,\allowbreak\, 36.7859)\,{}^\circ\mathrm C$}；含水率向量 \textbf{\boldmath$\bm C_{1800}=(2.5500,\allowbreak\, 2.5497,\allowbreak\, 2.5383,\allowbreak\, 2.3755,\allowbreak\, 1.5103)\,\mathrm{kg/kg}$}。
 
-\problem{二}在问题一的基础上，建立参数随温度、含水率变化的非线性热质耦合模型。对相邻节点间的导热系数和扩散系数采用调和平均，从而保证跨界面通量连续；将烘房环境划分为动态预热段与稳定恒温段，前段用附件数据插值，后段近似取\textbf{\boldmath$T_a^*=50\,{}^\circ\mathrm C$}、\textbf{\boldmath$C_a^*=0.05\,\mathrm{kg/kg}$}。采用\textbf{\boldmath$\Delta r=0.05\,\mathrm{cm}$}的细网格求解，并进行时空插值和结果输出，最终得到前\textbf{$3\,\mathrm h$}内药材温度与水分浓度的演化曲线。当\textbf{\boldmath$t=3\,\mathrm h$}时，中心与表面的计算结果为：\textbf{\boldmath$T_{\mathrm c}=49.8484\,{}^\circ\mathrm C$}，\textbf{\boldmath$T_{\mathrm s}=49.8975\,{}^\circ\mathrm C$}；\textbf{\boldmath$C_{\mathrm c}=1.7658\,\mathrm{kg/kg}$}，\textbf{\boldmath$C_{\mathrm s}=1.0080\,\mathrm{kg/kg}$}。
+\problem{二}在问题一的基础上，建立参数随温度、含水率变化的非线性热质耦合模型。对相邻节点间的导热系数和扩散系数采用调和平均；将烘房环境划分为动态预热段与稳定恒温段，前段用附件数据插值，后段近似取\textbf{\boldmath$T_a^*=50\,{}^\circ\mathrm C$}、\textbf{\boldmath$C_a^*=0.05\,\mathrm{kg/kg}$}。采用\textbf{\boldmath$\Delta r=0.05\,\mathrm{cm}$}的细网格求解，并进行时空插值和结果输出，最终得到前\textbf{\boldmath$3\,\mathrm h$}内药材温度与水分浓度的演化曲线。当\textbf{\boldmath$t=3\,\mathrm h$}时，中心与表面的计算结果为：\textbf{\boldmath$T_{\mathrm c}=49.8484\,{}^\circ\mathrm C$}，\textbf{\boldmath$T_{\mathrm s}=49.8975\,{}^\circ\mathrm C$}；\textbf{\boldmath$C_{\mathrm c}=1.7658\,\mathrm{kg/kg}$}，\textbf{\boldmath$C_{\mathrm s}=1.0080\,\mathrm{kg/kg}$}。
 
-\problem{三}在问题二基础之上，将烘干完成条件定义为全场最大含水率低于目标阈值，即 $t_{\mathrm{dry}}=\inf\{\,t>0:\ \max_{0\le r\le R_0}C(r,t)<\textbf{0.15}\,\mathrm{kg/kg}\,\}$。在 BDF 求解器中设置终止事件，并将仿真时间延长至所有径向节点均满足阈值。数值结果显示，药材中心的水分浓度始终最大，是决定烘干时长的控制位置。连续阈值时刻为\textbf{$207246.43\,\mathrm{s}$（$57.5685\,\mathrm h$）}；取首个严格达标的 $60\,\mathrm{s}$ 输出时刻，最终烘干时间为\textbf{\boldmath$207300\,\mathrm{s}$（$57.5833\,\mathrm h$）}。此时各指定位置的水分浓度为\textbf{\boldmath$\bm C_{\mathrm{dry}}=(0.1500,\allowbreak\,0.1477,\allowbreak\,0.1402,\allowbreak\,0.1250,\allowbreak\,0.0525)\,\mathrm{kg/kg}$}，依次对应 $r=(0,\,0.5,\,1.0,\,1.5,\,2.0)\,\mathrm{cm}$。未舍入的最大值为\textbf{$0.14998444\,\mathrm{kg/kg}$}，满足严格阈值条件。
+\problem{三}在问题二基础之上，将烘干完成条件定义为全场最大含水率低于目标阈值。在 BDF 求解器中设置终止事件，并将仿真时间延长至所有径向节点均满足阈值。数值结果显示，药材中心的水分浓度始终最大，是决定烘干时长的控制位置。连续阈值时刻为\textbf{\boldmath$57.5685\,\mathrm h$}；取首个严格达标的 $60\,\mathrm{s}$ 输出时刻，最终烘干时间为\textbf{\boldmath$57.5833\,\mathrm h$}。此时各指定位置的水分浓度为\textbf{\boldmath$\bm C_{\mathrm{dry}}=(0.1500,\allowbreak\,0.1477,\allowbreak\,0.1402,\allowbreak\,0.1250,\allowbreak\,0.0525)\,\mathrm{kg/kg}$}，依次对应 $r=(0,\,0.5,\,1.0,\,1.5,\,2.0)\,\mathrm{cm}$。
 
-\problem{四}该问题需同时考虑药材失水引起的径向收缩。依据附件半径数据构造 $R(t)$ 的分段线性插值函数，并引入无量纲坐标 $\xi=r/R(t)$（$0\le \xi\le 1$），将随时间变化的物理区域映射至固定计算区间。坐标变换后，在热传导与水分扩散方程中加入网格运动项 $\xi\dot R(t)/R(t)$ 及尺度因子 $1/R^2(t)$，结合附录四给出的物性关系，在固定 $\xi$ 网格上继续采用有限体积法与 BDF 求解，并以 $\max_i C_i<\textbf{0.15}\,\mathrm{kg/kg}$ 作为终止条件。为区分物性变化与几何收缩的影响，分别计算“固定半径--附录三物性”“固定半径--附录四物性”和“动态半径--附录四物性”三组方案。完整收缩模型的主要结果为：连续理论达标时刻\textbf{$t_{\mathrm{con}}=189768.43\,\mathrm{s}$（$52.7135\,\mathrm h$）}，安全输出时刻\textbf{\boldmath$t_{\mathrm{dry}}=189780\,\mathrm{s}$（$52.7167\,\mathrm h$）}，此时药材半径收缩至\textbf{\boldmath$R(t_{\mathrm{dry}})=1.2000\,\mathrm{cm}$}，最大含水率\textbf{\boldmath$\max_i C_i=0.14999407\,\mathrm{kg/kg}$}。与问题三相比，烘干时长缩短\textbf{\boldmath$17520\,\mathrm{s}$（$4.8667\,\mathrm h$）}，降幅为\textbf{\boldmath$8.45\%$}；与采用附录四物性但保持固定半径的对照模型相比，烘干时长缩短\textbf{\boldmath$77.3000\,\mathrm h$}，降幅为\textbf{\boldmath$59.45\%$}，干燥速度提高至原来的\textbf{\boldmath$2.466$}倍。结果说明，径向收缩通过缩短水分扩散距离显著提高了烘干效率。
+\problem{四}该问题需同时考虑药材失水引起的径向收缩。引入无量纲坐标 $\xi=r/R(t)$（$0\le \xi\le 1$），将随时间变化的物理区域映射至固定计算区间。坐标变换后，在热传导与水分扩散方程中加入网格运动项 $\xi\dot R(t)/R(t)$ 及尺度因子 $1/R^2(t)$，结合附录四给出的物性关系，在固定 $\xi$ 网格上继续采用有限体积法与 BDF 求解，并以 $\max_i C_i<\textbf{0.15}\,\mathrm{kg/kg}$ 作为终止条件。为区分物性变化与几何收缩的影响，通过控制“物性”和“收缩”设置了三组方案。得到的主要结果为：连续理论达标时刻\textbf{\boldmath$52.7135\,\mathrm h$}，安全输出时刻\textbf{\boldmath$52.7167\,\mathrm h$}。与问题三相比，烘干时长缩短\textbf{\boldmath$4.8667\,\mathrm h$}，降幅为\textbf{\boldmath$8.45\%$}；与采用附录四物性但保持固定半径的对照模型相比，烘干时长缩短\textbf{\boldmath$77.3000\,\mathrm h$}，降幅为\textbf{\boldmath$59.45\%$}，干燥速度提高至原来的\textbf{\boldmath$2.466$}倍。结果说明，径向收缩通过缩短水分扩散距离显著提高了烘干效率。
 
 最后给出了建模过程的误差分析和结果检验，本文结论正确合理，具有一定的应用价值和普适性。
 
 \vspace{0.6em}
-\noindent\textbf{关键词：}热质耦合；有限体积法；BDF；非线性扩散；移动边界；药材烘干
+\noindent\textbf{关键词：热质耦合；有限体积法；BDF；非线性扩散；移动边界；药材烘干}
 \end{abstract}
 \clearpage
 
@@ -1241,6 +1247,7 @@ C & 附录4物性，半径动态收缩 & \QFourDryHours\ h & 相比 B 缩短 77.
   \item 几何收缩是克服材料内部大扩散阻力的最关键驱动机制，能使干燥整体提速达 2.47 倍。
 \end{enumerate}
 
+\clearpage
 \section*{AI 工具使用声明}
 本参赛队在竞赛过程中使用了 AI 工具，主要用于【资料整理，代码调试】，详细使用情况见支撑材料。
 
@@ -1252,17 +1259,104 @@ C & 附录4物性，半径动态收缩 & \QFourDryHours\ h & 相比 B 缩短 77.
 \bibitem{mujumdar} Mujumdar A S, ed. \textit{Handbook of Industrial Drying}. 4th ed. Boca Raton: CRC Press, 2014.
 \end{thebibliography}
 
+\clearpage
 \section*{支撑材料清单}
-本文的支撑材料采用“输入数据—模块化数值求解—结果输出—独立校验”的结构，提交包位于 \texttt{A题\_支撑材料\_提交版/}，主要内容如下：
-\begingroup\small\raggedright
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{输入数据：} \texttt{data/附件1.xlsx}（烘房温度与水分浓度）和 \texttt{data/附件2.xlsx}（药材半径变化）；
-  \item \textbf{求解源码：} \texttt{src/config.py}（配置）、\texttt{src/models.py}（数据结构）、\texttt{src/data\_io.py}（附件读取）、\texttt{src/physics.py}（物性参数）、\texttt{src/solver.py}（有限体积法与 BDF）、\texttt{src/sampling.py}（采样与达标判定）、\texttt{src/excel\_output.py}（Excel 输出）、\texttt{src/plotting.py}（图表生成）和 \texttt{src/workflow.py}（四问流程）；
-  \item \textbf{分析与入口：} \texttt{run\_all.py}（一键复现）、\texttt{src/sensitivity\_analysis.py}（参数敏感性分析）以及保留兼容调用的 \texttt{src/drying\_solver.py}；
-  \item \textbf{结果文件：} \texttt{result/result1.xlsx}--\texttt{result/result4.xlsx}，分别对应问题1至问题4；\texttt{result/summary.json} 保存代表点、达标时间和网格检验，\texttt{result/parameter\_sensitivity.json} 保存参数敏感性结果，\texttt{result/validation.json} 保存自动校验报告；
-  \item \textbf{图表与说明：} \texttt{report/figures/} 中的论文图表，以及 \texttt{README.md}、\texttt{requirements.txt} 和本清单。
-\end{enumerate}
-在提交包根目录执行 \texttt{python run\_all.py} 可完成四问求解、结果导出、图表生成、敏感性分析与完整性校验；若仅复现四问和图表，可使用 \texttt{python run\_all.py --skip-sensitivity}。
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{2.0cm} >{\raggedright\arraybackslash}p{6.0cm} >{\raggedright\arraybackslash}X}
+\toprule
+类别 & 相对路径 / 文件 & 内容与功能说明 \\
+\midrule
+\multirow{2}{*}{原始数据}
+  & \texttt{data/附件1.xlsx} & 烘房环境温度与水分浓度监测数据 \\
+  & \texttt{data/附件2.xlsx} & 药材外半径动态变化实测数据 \\
+\midrule
+\multirow{3}{*}{计算程序}
+  & \texttt{run\_all.py} & 全流程一键复现主入口（求解、导出、绘图与校验） \\
+  & \texttt{validate\_results.py} & 结果文件格式规范与物理合理性独立校验程序 \\
+  & \texttt{src/} & 模块化核心求解源码包（物性、FVM、BDF与采样等） \\
+\midrule
+\multirow{4}{*}{规定结果}
+  & \texttt{result/result1.xlsx} $\sim$ \texttt{result4.xlsx} & 问题一至问题四规定格式的数值结果工作簿 \\
+  & \texttt{result/summary.json} & 关键采样点、达标时刻及网格统计数据汇总 \\
+  & \texttt{result/parameter\_}\allowbreak\texttt{sensitivity.json} & 传热、传质与扩散系数正负 10\% 敏感性分析数据 \\
+  & \texttt{result/validation.json} & 格式规范、边界条件及物理守恒性自动校验报告 \\
+\midrule
+\multirow{4}{*}{说明与图表}
+  & \texttt{report/figures/} & 论文高清图表（时空演化、径向曲线与达标判据等） \\
+  & \texttt{README.md}, \texttt{requirements.txt} & 运行环境说明、执行指南及 Python 依赖库清单 \\
+  & \texttt{AI使用情况说明.pdf} & 本次竞赛 AI 工具使用场景、Prompt 及核验说明 \\
+  & \texttt{支撑材料文件清单.pdf} & 提交文件目录结构、哈希校验摘要与复现指南 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vspace{-0.3em}
+\noindent\textbf{复现说明：}在支撑材料根目录下安装依赖后，执行 \texttt{python run\_all.py} 即可一键完成四问数值求解、结果导出、图表绘制、敏感性分析与完整性校验；若仅需复现四问计算结果与图表，可执行 \texttt{python run\_all.py --skip-sensitivity}。
+
+\clearpage
+\appendix
+\section{完整源程序代码}
+
+本附录收录建模、数值求解、结果导出、绘图、敏感性分析与完整性校验所用的全部 Python 源程序，共计 14 个文件。各文件与支撑材料中的对应文件一致。安装 \texttt{requirements.txt} 中所列依赖后，在支撑材料根目录执行 \texttt{python run\_all.py}，即可完整复现问题一至问题四的计算结果、Excel 文件、论文图表和校验报告。
+
+\begingroup
+\lstset{
+  basicstyle=\scriptsize\ttfamily,
+  numberstyle=\tiny\color{gray},
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  aboveskip=0.5em,
+  belowskip=1em
+}
+
+\subsection{一键运行入口：\texttt{run\_all.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/run_all.py}
+
+\subsection{项目配置：\texttt{src/config.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/config.py}
+
+\subsection{数据结构：\texttt{src/models.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/models.py}
+
+\subsection{附件读取与校验：\texttt{src/data\_io.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/data_io.py}
+
+\subsection{物性参数：\texttt{src/physics.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/physics.py}
+
+\subsection{有限体积离散与 BDF 求解：\texttt{src/solver.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/solver.py}
+
+\subsection{阈值判定与空间采样：\texttt{src/sampling.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/sampling.py}
+
+\subsection{Excel 结果输出：\texttt{src/excel\_output.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/excel_output.py}
+
+\subsection{论文图表生成：\texttt{src/plotting.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/plotting.py}
+
+\subsection{四问计算流程：\texttt{src/workflow.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/workflow.py}
+
+\subsection{参数敏感性分析：\texttt{src/sensitivity\_analysis.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/sensitivity_analysis.py}
+
+\subsection{兼容调用入口：\texttt{src/drying\_solver.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/drying_solver.py}
+
+\subsection{源码包声明：\texttt{src/\_\_init\_\_.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/__init__.py}
+
+\subsection{结果完整性校验：\texttt{validate\_results.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/validate_results.py}
+
 \endgroup
 
 \end{document}
