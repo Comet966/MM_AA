@@ -580,7 +580,7 @@ q_i\omega_i^r\frac{d\phi_i}{dt}=F_{i+1/2}-F_{i-1/2},\qquad
 F_{i+1/2}=r_{i+1/2}\Gamma_{i+1/2}
 \frac{\phi_{i+1}-\phi_i}{\Delta r},\label{eq:fvm-r}
 \end{equation}
-其中，$F_{i\pm1/2}$ 表示穿过控制体界面的径向扩散通量，控制体的几何权重和界面传递系数分别为
+其中，$F_{i\pm1/2}$ 表示穿过控制体界面的广义径向扩散通量（即引入柱坐标半径加权后的界面导热热流或水分扩散通量），控制体的几何权重和界面传递系数分别为
 \begin{equation}
 \omega_i^r=\frac{r_{i+1/2}^2-r_{i-1/2}^2}{2},\qquad
 \Gamma_{i+1/2}=\frac{2\Gamma_i\Gamma_{i+1}}{\Gamma_i+\Gamma_{i+1}}.
@@ -684,7 +684,7 @@ F_R^T=Rh(T_a-T_N),\qquad F_R^C=Rh_m(C_a-C_N).
 \end{tabular}
 \end{table}
 
-由表\ref{tab:q1t}与表\ref{tab:q1c}可知，药材各位置的温度随时间持续升高，并保持表面高、中心低的径向分布；至 $1800\,\mathrm s$ 时，表面温度比中心高 $3.2105\,{}^\circ\mathrm C$。水分则首先从外层逸出，表面含水率已较初值下降 $1.0397\,\mathrm{kg/kg}$，而中心含水率在四位小数下仍为初值。图\ref{fig:q1_profiles}与图\ref{fig:q1_heatmaps}进一步表明，30 min内温度扰动已明显向内部传播，水分变化仍主要集中在药材外层，说明该阶段\textbf{热扩散快于水分扩散}。
+由表\ref{tab:q1t}与表\ref{tab:q1c}可知，药材各位置的温度随时间持续升高，并保持表面高、中心低的径向分布；至 $1800\,\mathrm s$ 时，表面温度比中心高 $3.2105\,{}^\circ\mathrm C$。水分则首先从外层逸出，表面含水率已较初值下降 $1.0397\,\mathrm{kg/kg}$，而中心含水率在四位小数下仍为初值。图\ref{fig:q1_profiles}与图\ref{fig:q1_heatmaps}进一步表明，30 min内温度扰动已明显向内部传播，水分变化仍主要集中在药材外层，说明该阶段热扩散快于水分扩散。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\textwidth]{question1_profiles.png}
@@ -717,30 +717,37 @@ D_2(C,T)
 \label{eq:q2_properties}
 \end{equation}
 
-随着温度场和水分场演化，上述物性会实时改变，并进一步影响后续的传热传质过程，由此形成\textbf{双向热质耦合}。将式\eqref{eq:q2_properties}代入第五章建立的一维径向模型，并与初始条件和边界条件联立，得到问题2整个烘干过程中，药材温度和水分浓度变化规律的数学模型：
+随着温度场和水分场演化，上述物性会实时改变，并进一步影响后续的传热传质过程，由此形成双向热质耦合。将式\eqref{eq:q2_properties}代入第五章建立的一维径向模型，并与初始条件和边界条件联立，得到问题2整个烘干过程中，药材温度和水分浓度变化规律的数学模型：
 \par\vspace{0.5\baselineskip}
 \begin{equation}
 \left\{
 \begin{array}{@{}l@{\quad}l@{}}
-\text{传热方程：} &
-\displaystyle \rho_2(C)c_{p2}(C)\frac{\partial T}{\partial t}
-=\frac{1}{r}\frac{\partial}{\partial r}\!\left(rk_2(C)\frac{\partial T}{\partial r}\right),\\[12pt]
-\text{传质方程：} &
-\displaystyle \frac{\partial C}{\partial t}
-=\frac{1}{r}\frac{\partial}{\partial r}\!\left(rD_2(C,T)\frac{\partial C}{\partial r}\right),\\[12pt]
-\text{中心对称条件：} &
-\displaystyle \left.\frac{\partial T}{\partial r}\right|_{r=0}=0,\qquad
+\text{传热方程：}
+&\displaystyle (650+128C)\left(1450+2736\frac{C}{C+1}\right)\frac{\partial T}{\partial t}
+=\frac{1}{r}\frac{\partial}{\partial r}
+\left[r\left(0.21+0.38\frac{C}{C+1}\right)\frac{\partial T}{\partial r}\right],\\[12pt]
+\text{传质方程：}
+&\displaystyle \frac{\partial C}{\partial t}
+=\frac{1}{r}\frac{\partial}{\partial r}
+\left[2.4\times10^{-3}r
+\exp\!\left(-\frac{0.45}{C}\right)
+\exp\!\left(-\frac{3850}{T}\right)
+\frac{\partial C}{\partial r}\right],\\[12pt]
+\text{初始条件：}
+&\displaystyle T(r,0)=301.15\ \mathrm K,\qquad C(r,0)=2.55,\\[12pt]
+\text{中心对称条件：}
+&\displaystyle \left.\frac{\partial T}{\partial r}\right|_{r=0}=0,\qquad
 \left.\frac{\partial C}{\partial r}\right|_{r=0}=0,\\[12pt]
-\text{表面对流换热：} &
-\displaystyle -k_2(C_s)
+\text{表面对流换热：}
+&\displaystyle -\left(0.21+0.38\frac{C_s}{C_s+1}\right)
 \left.\frac{\partial T}{\partial r}\right|_{r=R}
 =h[T_s-T_a(t)],\\[12pt]
-\text{表面对流传质：} &
-\displaystyle -D_2(C_s,T_s)
+\text{表面对流传质：}
+&\displaystyle -2.4\times10^{-3}
+\exp\!\left(-\frac{0.45}{C_s}\right)
+\exp\!\left(-\frac{3850}{T_s}\right)
 \left.\frac{\partial C}{\partial r}\right|_{r=R}
-=h_m[C_s-C_a(t)],\\[12pt]
-\text{初始条件：} &
-\displaystyle T(r,0)=301.15\ \mathrm K,\qquad C(r,0)=2.55.
+=h_m[C_s-C_a(t)].
 \end{array}
 \right.
 \label{eq:q2_full_system}
