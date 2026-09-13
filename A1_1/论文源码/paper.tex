@@ -73,7 +73,7 @@
 
 \problem{三}在问题二基础之上，将烘干完成条件定义为全场最大含水率低于目标阈值。在 BDF 求解器中设置终止事件，并将仿真时间延长至所有径向节点均满足阈值。数值结果显示，药材中心的水分浓度始终最大，是决定烘干时长的控制位置。取首个严格达标的 $60\,\mathrm{s}$ 输出时刻，最终烘干时间为\textbf{\boldmath$57.5833\,\mathrm h$}。此时各指定位置的水分浓度为\textbf{\boldmath$\bm C_{\mathrm{dry}}=(0.1500,\allowbreak\,0.1477,\allowbreak\,0.1402,\allowbreak\,0.1250,\allowbreak\,0.0525)\,\mathrm{kg/kg}$}，依次对应 $r=(0,\,0.5,\,1.0,\,1.5,\,2.0)\,\mathrm{cm}$。
 
-\problem{四}该问题需同时考虑药材失水引起的径向收缩。引入无量纲坐标 $\xi=r/R(t)$（$0\le \xi\le 1$），将随时间变化的物理区域映射至固定计算区间。坐标变换后，在热传导与水分扩散方程中加入网格运动项 $\xi\dot R(t)/R(t)$ 及尺度因子 $1/R^2(t)$，结合附录四给出的物性关系，在固定 $\xi$ 网格上继续采用有限体积法与 BDF 求解，并以 $\max_i C_i<\textbf{0.15}\,\mathrm{kg/kg}$ 作为终止条件。为区分物性变化与几何收缩的影响，通过控制“物性”和“收缩”设置了三组方案。得到的最终达标时刻为：\textbf{\boldmath$52.7167\,\mathrm h$}。与问题三相比，烘干时长缩短\textbf{\boldmath$4.8667\,\mathrm h$}，降幅为\textbf{\boldmath$8.45\%$}；与采用附录四物性但保持固定半径的对照模型相比，烘干时长缩短\textbf{\boldmath$77.3000\,\mathrm h$}，降幅为\textbf{\boldmath$59.45\%$}，干燥速度提高至原来的\textbf{\boldmath$2.466$}倍。结果说明，径向收缩通过缩短水分扩散距离显著提高了烘干效率。
+\problem{四}该问题需同时考虑药材失水引起的径向收缩。引入无量纲坐标 $\xi=r/R(t)$（$0\le \xi\le 1$），将随时间变化的物理区域映射至固定计算区间。坐标变换后，在热传导与水分扩散方程中加入网格运动项 $\xi\dot R(t)/R(t)$ 及尺度因子 $1/R^2(t)$，结合附录四给出的物性关系，在固定 $\xi$ 网格上继续采用有限体积法与 BDF 求解，并以 $\max_i C_i<\textbf{0.15}\,\mathrm{kg/kg}$ 作为终止条件。为区分物性变化与几何收缩的影响，通过控制“物性”和“收缩”设置了三组方案。得到的最终达标时刻为\textbf{\boldmath$52.7167\,\mathrm h$}。与问题三相比，烘干时长缩短\textbf{\boldmath$4.8667\,\mathrm h$}，降幅为\textbf{\boldmath$8.45\%$}；与采用附录四物性但保持固定半径的对照模型相比，烘干时长缩短\textbf{\boldmath$77.3000\,\mathrm h$}，降幅为\textbf{\boldmath$59.45\%$}，干燥速度提高至原来的\textbf{\boldmath$2.466$}倍。结果说明，径向收缩通过缩短水分扩散距离显著提高了烘干效率。
 
 最后给出了建模过程的误差分析和结果检验，本文结论正确合理，具有一定的应用价值和普适性。
 
@@ -719,9 +719,10 @@ D_2(C,T)
 
 随着温度场和水分场演化，上述物性会实时改变，并进一步影响后续的传热传质过程，由此形成双向热质耦合。将式\eqref{eq:q2_properties}代入第五章建立的一维径向模型，并与初始条件和边界条件联立，得到问题2整个烘干过程中，药材温度和水分浓度变化规律的数学模型：
 \par\vspace{0.5\baselineskip}
+{\small
 \begin{equation}
 \left\{
-\begin{array}{@{}l@{\quad}c@{}}
+\begin{array}{@{}l@{\hspace{0.1em}}c@{}}
 \text{传热方程：}
 &\displaystyle (650+128C)\left(1450+2736\frac{C}{C+1}\right)\frac{\partial T}{\partial t}
 =\frac{1}{r}\frac{\partial}{\partial r}
@@ -753,6 +754,7 @@ D_2(C,T)
 \label{eq:q2_full_system}
 \raisetag{1.5\baselineskip}
 \end{equation}
+}
 \par\vspace{0.5\baselineskip}
 其中，$T_s=T(R,t)$、$C_s=C(R,t)$ 分别为药材表面的温度和水分浓度，$T_a(t)$、$C_a(t)$ 分别为烘房环境温度和水分浓度。式\eqref{eq:q2_full_system}表明，温度场通过 $D_2(C,T)$ 影响水分迁移，水分场则通过 $\rho_2(C)$、$c_{p2}(C)$ 和 $k_2(C)$ 影响热量传递。
 
