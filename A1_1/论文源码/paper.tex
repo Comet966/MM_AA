@@ -1131,16 +1131,102 @@ C & 附录4物性，半径动态收缩 & \QFourDryHours\ h & 相比 B 缩短 77.
 \end{thebibliography}
 
 \section*{支撑材料清单}
-本文的支撑材料采用“输入数据—模块化数值求解—结果输出—独立校验”的结构，提交包位于 \texttt{A题\_支撑材料\_提交版/}，主要内容如下：
-\begingroup\small\raggedright
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{输入数据：} \texttt{data/附件1.xlsx}（烘房温度与水分浓度）和 \texttt{data/附件2.xlsx}（药材半径变化）；
-  \item \textbf{求解源码：} \texttt{src/config.py}（配置）、\texttt{src/models.py}（数据结构）、\texttt{src/data\_io.py}（附件读取）、\texttt{src/physics.py}（物性参数）、\texttt{src/solver.py}（有限体积法与 BDF）、\texttt{src/sampling.py}（采样与达标判定）、\texttt{src/excel\_output.py}（Excel 输出）、\texttt{src/plotting.py}（图表生成）和 \texttt{src/workflow.py}（四问流程）；
-  \item \textbf{分析与入口：} \texttt{run\_all.py}（一键复现）、\texttt{src/sensitivity\_analysis.py}（参数敏感性分析）以及保留兼容调用的 \texttt{src/drying\_solver.py}；
-  \item \textbf{结果文件：} \texttt{result/result1.xlsx}--\texttt{result/result4.xlsx}，分别对应问题1至问题4；\texttt{result/summary.json} 保存代表点、达标时间和网格检验，\texttt{result/parameter\_sensitivity.json} 保存参数敏感性结果，\texttt{result/validation.json} 保存自动校验报告；
-  \item \textbf{图表与说明：} \texttt{report/figures/} 中的论文图表，以及 \texttt{README.md}、\texttt{requirements.txt} 和本清单。
-\end{enumerate}
-在提交包根目录执行 \texttt{python run\_all.py} 可完成四问求解、结果导出、图表生成、敏感性分析与完整性校验；若仅复现四问和图表，可使用 \texttt{python run\_all.py --skip-sensitivity}。
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{2.0cm} >{\raggedright\arraybackslash}p{6.0cm} >{\raggedright\arraybackslash}X}
+\toprule
+类别 & 相对路径 / 文件 & 内容与功能说明 \\
+\midrule
+\multirow{2}{*}{原始数据}
+  & \texttt{data/附件1.xlsx} & 烘房环境温度与水分浓度监测数据 \\
+  & \texttt{data/附件2.xlsx} & 药材外半径动态变化实测数据 \\
+\midrule
+\multirow{3}{*}{计算程序}
+  & \texttt{run\_all.py} & 全流程一键复现主入口（求解、导出、绘图与校验） \\
+  & \texttt{validate\_results.py} & 结果文件格式规范与物理合理性独立校验程序 \\
+  & \texttt{src/} & 模块化核心求解源码包（物性、FVM、BDF与采样等） \\
+\midrule
+\multirow{4}{*}{规定结果}
+  & \texttt{result/result1.xlsx} $\sim$ \texttt{result4.xlsx} & 问题一至问题四规定格式的数值结果工作簿 \\
+  & \texttt{result/summary.json} & 关键采样点、达标时刻及网格统计数据汇总 \\
+  & \texttt{result/parameter\_}\allowbreak\texttt{sensitivity.json} & 传热、传质与扩散系数正负 10\% 敏感性分析数据 \\
+  & \texttt{result/validation.json} & 格式规范、边界条件及物理守恒性自动校验报告 \\
+\midrule
+\multirow{4}{*}{说明与图表}
+  & \texttt{report/figures/} & 论文高清图表（时空演化、径向曲线与达标判据等） \\
+  & \texttt{README.md}, \texttt{requirements.txt} & 运行环境说明、执行指南及 Python 依赖库清单 \\
+  & \texttt{AI使用情况说明.pdf} & 本次竞赛 AI 工具使用场景、Prompt 及核验说明 \\
+  & \texttt{支撑材料文件清单.pdf} & 提交文件目录结构、哈希校验摘要与复现指南 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vspace{-0.3em}
+\noindent\textbf{复现说明：}在支撑材料根目录下安装依赖后，执行 \texttt{python run\_all.py} 即可一键完成四问数值求解、结果导出、图表绘制、敏感性分析与完整性校验；若仅需复现四问计算结果与图表，可执行 \texttt{python run\_all.py --skip-sensitivity}。
+
+\clearpage
+\appendix
+\section{完整源程序代码}
+
+本附录收录建模、数值求解、结果导出、绘图、敏感性分析与完整性校验所用的全部 Python 源程序，共计 14 个文件。各文件与支撑材料中的对应文件一致。安装 \texttt{requirements.txt} 中所列依赖后，在支撑材料根目录执行 \texttt{python run\_all.py}，即可完整复现问题一至问题四的计算结果、Excel 文件、论文图表和校验报告。
+
+\begingroup
+\lstset{
+  basicstyle=\scriptsize\ttfamily,
+  numberstyle=\tiny\color{gray},
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  aboveskip=0.5em,
+  belowskip=1em
+}
+
+\subsection{一键运行入口：\texttt{run\_all.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/run_all.py}
+
+\subsection{项目配置：\texttt{src/config.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/config.py}
+
+\subsection{数据结构：\texttt{src/models.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/models.py}
+
+\subsection{附件读取与校验：\texttt{src/data\_io.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/data_io.py}
+
+\subsection{物性参数：\texttt{src/physics.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/physics.py}
+
+\subsection{有限体积离散与 BDF 求解：\texttt{src/solver.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/solver.py}
+
+\subsection{阈值判定与空间采样：\texttt{src/sampling.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/sampling.py}
+
+\subsection{Excel 结果输出：\texttt{src/excel\_output.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/excel_output.py}
+
+\subsection{论文图表生成：\texttt{src/plotting.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/plotting.py}
+
+\subsection{四问计算流程：\texttt{src/workflow.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/workflow.py}
+
+\subsection{参数敏感性分析：\texttt{src/sensitivity\_analysis.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/sensitivity_analysis.py}
+
+\subsection{兼容调用入口：\texttt{src/drying\_solver.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/drying_solver.py}
+
+\subsection{源码包声明：\texttt{src/\_\_init\_\_.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/src/__init__.py}
+
+\subsection{结果完整性校验：\texttt{validate\_results.py}}
+\lstinputlisting{../../A题_支撑材料_提交版/validate_results.py}
+
 \endgroup
 
 \end{document}
