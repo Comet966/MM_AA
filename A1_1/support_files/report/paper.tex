@@ -1,4 +1,12 @@
-\documentclass[12pt,a4paper]{ctexart}
+\documentclass[12pt,a4paper,fontset=none]{ctexart}
+\setCJKmainfont[
+  Path=/System/Library/Fonts/Supplemental/,
+  FontIndex=4,
+  BoldFont={Songti.ttc},
+  BoldFeatures={Path=/System/Library/Fonts/Supplemental/, FontIndex=1}
+]{Songti.ttc}
+\setCJKsansfont[Path=/System/Library/Fonts/]{STHeiti Medium.ttc}
+\setCJKmonofont[Path=/System/Library/Fonts/]{STHeiti Light.ttc}
 \usepackage[a4paper,top=25mm,bottom=25mm,left=25mm,right=25mm,headheight=15pt]{geometry}
 \usepackage{amsmath,amssymb,bm,booktabs,longtable,array,tabularx,multirow}
 \usepackage{graphicx,float,subcaption,xcolor,hyperref,fancyhdr,enumitem,tikz}
@@ -687,126 +695,231 @@ F_R^T=Rh(T_a-T_N),\qquad F_R^C=Rh_m(C_a-C_N).
 
 \subsection{问题2：非线性物性下的耦合演化}
 
-\subsubsection{模型建立}
-问题2沿用式\eqref{eq:q1_system}的控制方程、初始条件和边界条件，仅将物性替换为附录3给出的非线性函数：
+\subsubsection{模型求解}
+
+在问题1中，我们将材料的各项物性参数看作常数，并据此求出了物料内部
+温度和含水率随时间的变化。问题2在此基础上进一步考虑物性参数的变化，即
+材料的密度、比热容、导热系数和水分扩散系数均会随着温度或含水率发生改变。
+根据附录3，问题2中各物性参数的计算式为
 \begin{equation}
 \begin{aligned}
-\rho_2(C)&=650+128C,\\
-c_{p2}(C)&=1450+2736\frac{C}{C+1},\\
-k_2(C)&=0.21+0.38\frac{C}{C+1},\\
-D_2(C,T)&=2.4\times10^{-3}
+\rho_2(C)
+&=650+128C,\\
+c_{p2}(C)
+&=1450+2736\frac{C}{C+1},\\
+k_2(C)
+&=0.21+0.38\frac{C}{C+1},\\
+D_2(C,T)
+&=2.4\times10^{-3}
 \exp\!\left(-\frac{0.45}{C}\right)
 \exp\!\left(-\frac{3850}{T}\right).
-\end{aligned}\label{eq:q2_properties}
+\end{aligned}
+\label{eq:q2_properties}
 \end{equation}
-将式\eqref{eq:q2_properties}代入传热传质方程，即得到问题2的非线性热质耦合模型。
 
-\subsubsection{模型求解}
-沿用问题1的有限体积--BDF流程，将温度和水分浓度共同组成状态向量，并在每次右端项计算时根据当前状态更新各节点物性。采用201个径向节点求解前3 h的温度场和水分场。
+可以看出，密度、比热容和导热系数均与含水率有关，而水分扩散系数
+同时受到温度和含水率的影响。因此，在物料干燥的过程中，温度和含水率发生
+变化后，各项物性参数也会随之改变，进而影响下一时刻的传热和传质过程。因而，
+在求解时，不能再将这些参数预先设为固定值，而需要根据每一时刻的温度和
+含水率重新计算。将式\eqref{eq:q2_properties}代入式\eqref{eq:q1_system}，即可
+得到问题2所需的温度场--水分场联立模型。
 
-\subsubsection{计算结果与分析}
-在10800 s时，中心与表面温度分别为49.8484 $^\circ$C和49.8975 $^\circ$C，温差不足0.05 $^\circ$C；中心与表面含水率分别为1.7658 kg/kg和1.0080 kg/kg。说明温度场已接近准平衡，而水分场仍保持明显梯度，结果见图\ref{fig:q2_profiles}和图\ref{fig:q2_heatmaps}。
+在前面的求解过程中，我们已经完成了控制方程和边界条件的处理。因此，对于问题2，
+我们只需在每个时间步内增加物性参数的更新过程。具体求解步骤如下：
 
-\begin{table}[H]
-\centering
-\caption{问题2：3 h 内药材温度（$^\circ$C）}\label{tab:q2t}
-\small
-\begin{tabular}{rrrrrr}
-\toprule
-时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
-\midrule
-0.5 & 32.1893 & 32.3822 & 32.9658 & 33.9602 & 35.4140 \\
-1.0 & 40.3812 & 40.5532 & 41.0602 & 41.8776 & 42.9947 \\
-1.5 & 45.8464 & 45.9346 & 46.1929 & 46.6054 & 47.1418 \\
-2.0 & 48.4507 & 48.4885 & 48.5988 & 48.7732 & 49.0041 \\
-2.5 & 49.5259 & 49.5383 & 49.5744 & 49.6312 & 49.7046 \\
-3.0 & 49.8484 & 49.8518 & 49.8617 & 49.8773 & 49.8975 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\noindent\textbf{Step1：}输入问题1中已经确定的初始条件和边界条件，并沿物料
+半径方向设置201个节点。中心位置仍采用对称边界条件，物料表面采用相应的
+传热和传质边界条件。
 
-\begin{table}[H]
-\centering
-\caption{问题2：3 h 内水分浓度（kg/kg）}\label{tab:q2c}
-\small
-\begin{tabular}{rrrrrr}
-\toprule
-时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
-\midrule
-0.5 & 2.5499 & 2.5489 & 2.5256 & 2.3257 & 1.6486 \\
-1.0 & 2.5257 & 2.4948 & 2.3578 & 2.0230 & 1.4711 \\
-1.5 & 2.3861 & 2.3256 & 2.1344 & 1.8020 & 1.3476 \\
-2.0 & 2.1708 & 2.1084 & 1.9236 & 1.6259 & 1.2311 \\
-2.5 & 1.9562 & 1.9002 & 1.7357 & 1.4720 & 1.1172 \\
-3.0 & 1.7658 & 1.7162 & 1.5700 & 1.3333 & 1.0080 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\noindent\textbf{Step2：}根据当前时刻各节点的温度$T_i$和含水率$C_i$，利用
+式\eqref{eq:q2_properties}分别计算该节点处的$\rho_{2,i}$、$c_{p2,i}$、
+$k_{2,i}$和$D_{2,i}$。
+
+\noindent\textbf{Step3：}将更新后的物性参数代入传热传质方程，采用与问题1
+相同的有限体积法对空间进行离散，并用BDF方法求出下一时刻各节点的温度
+和含水率。若该时间步的计算结果满足收敛条件，则继续计算下一时刻；否则，
+需再次更新物性参数并进行求解。
+
+\noindent\textbf{Step4：}重复上述过程，直到计算时间达到$10800\ \mathrm{s}$。
+最后输出物料在代表时刻的径向分布曲线以及前3 h内的温度场和水分场变化
+情况，并对物料中心和表面的计算结果进行比较。
+
+\subsubsection{求解结果}
+
+使用上述方法对问题2进行计算。当$t=10800\ \mathrm{s}$时，物料中心温度为
+$49.8484\ {}^\circ\mathrm{C}$，表面温度为$49.8975\ {}^\circ\mathrm{C}$，
+二者仅相差$0.0491\ {}^\circ\mathrm{C}$。由此可以看出，经过3 h后，物料
+中心和表面的温度已经十分接近，温度在径向上的差异较小。
+
+在同一时刻，物料中心处的含水率为$1.7658\ \mathrm{kg/kg}$，表面处的含水率
+为$1.0080\ \mathrm{kg/kg}$，二者相差$0.7578\ \mathrm{kg/kg}$。与温度的
+计算结果相比，此时中心和表面的含水率仍有较大差异，说明物料内部的水分
+尚未充分向表面迁移。
+
+物料在代表时刻的温度和含水率径向分布如图\ref{fig:q2_profiles}所示。从图中
+可以看出，温度曲线已经较为平缓，而含水率从中心到表面呈现出较为明显的
+下降趋势，这与上述计算结果相符。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\textwidth]{question2_profiles.png}
-\caption{问题2在代表时刻的径向温度与水分浓度分布剖面}\label{fig:q2_profiles}
+\caption{问题2在代表时刻的径向温度与含水率分布}
+\label{fig:q2_profiles}
 \end{figure}
+
+前3 h内温度场和水分场的变化情况如图\ref{fig:q2_heatmaps}所示。从图可以看出，
+随着加热时间的增加，物料各位置温度的差异逐渐减小；而相比之下，含水率的变化则要慢得多，直至计算结束时，中心处的含水率仍高于表面。这是由于水分扩散系数
+$D_2(C,T)$会随着温度和含水率的变化而改变，使得物料内部不同位置的水分
+迁移速度并不相同。因此，在前3 h内，物料的温度已基本趋于均匀，而水分仍
+需较长时间才能由内部逐渐向外扩散。
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{question2_heatmaps.png}
-\caption{问题2前3 h温度场与水分场的二维时空全景演化热力图}\label{fig:q2_heatmaps}
+\caption{问题2前3 h温度场与水分场的二维时空分布}
+\label{fig:q2_heatmaps}
 \end{figure}
+
+综上所述，在充分考虑物料的非线性物性之后，它的温度的变化速度仍明显快于水分向外迁移的
+速度。经过3 h计算，物料内部温度已经较为均匀，但中心和表面的含水率仍存在
+较大差异。因此，在后续判断物料是否达到干燥要求时，不能只考虑温度变化，
+还需要关注内部水分的扩散过程。
 
 \subsection{问题3：固定半径下的干燥终点}
 
-\subsubsection{模型建立}
-问题3直接沿用问题2的联立系统，将计算时域延长并增加全场终止事件
+\subsubsection{问题分析与终止条件}
+
+问题3是在物料半径保持不变的条件下，求出其全域水分浓度均降至
+$0.15$ 以下的最早时刻。本题不用再建立新的传热传质模型，而是直接沿用
+问题2所得到的温度场--水分场联立系统，并将计算时域延长至干燥过程结束。
+需要注意的是，表面节点较早达到给定阈值并不能说明物料已经完全干燥；
+只有径向区域内水分浓度的最大值低于阈值时，才可判定整个物料满足要求。
+
+定义全场最大水分浓度
 \begin{equation}
-g(t)=\max_{0\le r\le R}C(r,t)-0.15=0.
+M(t)=\max_{0\leq r\leq R}C(r,t),
+\label{eq:q3_max_concentration}
+\end{equation}
+并构造事件函数
+\begin{equation}
+g(t)=M(t)-0.15.
 \label{eq:q3_event}
 \end{equation}
+由于干燥阶段的控制量为全域最大值，理论临界时刻可表示为
+\begin{equation}
+t_{\mathrm{c}}
+=\inf\left\{t>0\,\middle|\,M(t)\leq 0.15\right\},
+\qquad g\!\left(t_{\mathrm{c}}\right)=0.
+\label{eq:q3_continuous_time}
+\end{equation}
+(1)式中，$R$为物料半径，$C(r,t)$为位置$r$、时刻$t$处的水分浓度。
 
-\subsubsection{模型求解}
-采用801个径向节点连续定位理论终点，再在60 s输出网格上取首个满足
-$\max C<0.15$ 的安全时刻。
+\subsubsection{数值求解方法}
+
+在问题2的求解过程中，我们已经得到了物料内部温度和水分浓度随时间的
+变化情况。因此，对于问题3，只需保持物料半径不变，将原有模型的求解时间
+适当延长，直到物料各处的水分浓度均低于$0.15$即可。考虑到程序每隔
+$60\ \mathrm{s}$输出一次结果，理论上的临界时刻不一定恰好落在输出节点上，
+所以可以先利用事件函数确定其准确位置，再从输出结果中选取一个满足要求的安全
+时刻。具体求解步骤如下：
+
+\noindent\textbf{Step1：}输入问题2中已经确定的模型参数、初始条件和边界条件，
+保持物料半径$R$不变，并将径向区域划分为801个节点。
+
+\noindent\textbf{Step2：}用问题2中的温度场--水分场联立方程进行计算。分别求出各径向节点处每时刻的水分浓度，并从中选出最大值$M(t)$。
+
+\noindent\textbf{Step3：}判断$M(t)$是否降至$0.15$。若事件函数$g(t)$由正值
+变为非正值，则说明全域最大水分浓度在这一时间段内达到规定要求，即可进一步在
+相邻两个计算时刻之间求解$g(t)=0$，从而得到理论临界时刻
+$t_{\mathrm{c}}$；若不满足，则需继续延长时间进行计算。
+
+\noindent\textbf{Step4：}由于题目结果在$60\ \mathrm{s}$时间网格上给出，还需在
+$t_n=60n$处进行再次判断。若某一输出时刻满足$M(t_n)<0.15$，则将其作为最终的
+安全达标时刻；否则，需继续考察下一个输出时刻。即
+\begin{equation}
+t_3=\min\left\{60n\,\middle|\,
+\max_{0\leq j\leq800}C(r_j,60n)<0.15\right\}.
+\label{eq:q3_safe_time}
+\end{equation}
+
+\noindent\textbf{Step5：}输出最终达标的时刻，并记录物料表面和中心位置达到
+$0.15$的时间。最后结合温度场和水分场的变化图，对干燥终点进行分析。
+
+通过上述步骤，既可以得到水分浓度恰好达到$0.15$的理论时刻，又能保证所取
+的离散输出时刻已经满足全域水分浓度低于$0.15$的要求。
 
 \subsubsection{计算结果与分析}
-连续临界时刻为57.5685 h；60 s网格上的安全达标时刻为
-\begin{equation}
-\boxed{t_3=207300\ \mathrm{s}=\QThreeDryHours\ \mathrm{h}\approx2.40\ \mathrm{d}}.
-\end{equation}
-此时全域最大含水率为0.149984。表面在12.55 h即达到0.15，而中心需57.58 h，表明内部扩散是终点控制环节，故采用全场最大值判停。计算结果见图\ref{fig:drying}和图\ref{fig:q3_heatmaps}。
 
-\begin{longtable}{rrrrrr}
-\caption{问题3每6 h及达标时刻的水分浓度}\label{tab:q3}\\
+通过数值计算可得，事件函数首次到达零点的连续临界时刻为
+\begin{equation}
+t_{\mathrm{c}}=57.5685\ \mathrm{h}
+=207246.6\ \mathrm{s}.
+\label{eq:q3_critical_result}
+\end{equation}
+在$60\ \mathrm{s}$输出网格上继续进行检验，首个满足全域水分浓度严格低于
+$0.15$的安全时刻为
+\begin{equation}
+\boxed{t_3=207300\ \mathrm{s}
+=\QThreeDryHours\ \mathrm{h}
+\approx2.40\ \mathrm{d}}.
+\label{eq:q3_final_result}
+\end{equation}
+此时全域最大水分浓度为$0.149984$，比规定阈值低$1.6\times10^{-5}$。
+两级判停结果如表\ref{tab:q3_results}所示。
+
+\begin{table}[H]
+\centering
+\caption{问题3干燥终点计算结果}
+\label{tab:q3_results}
+\begin{tabular}{cccc}
 \toprule
-时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
+判定方式 & 达标时刻/s & 达标时刻/h & 全域最大水分浓度 \\
 \midrule
-\endfirsthead
-\toprule
-时间/h & 0 cm & 0.5 cm & 1.0 cm & 1.5 cm & 2.0 cm \\
-\midrule
-\endhead
-6 & 1.0172 & 0.9884 & 0.9017 & 0.7550 & 0.5326 \\
-12 & 0.4564 & 0.4434 & 0.4032 & 0.3298 & 0.1640 \\
-18 & 0.2990 & 0.2917 & 0.2688 & 0.2254 & 0.0843 \\
-24 & 0.2379 & 0.2329 & 0.2168 & 0.1857 & 0.0663 \\
-30 & 0.2059 & 0.2020 & 0.1893 & 0.1642 & 0.0597 \\
-36 & 0.1860 & 0.1826 & 0.1719 & 0.1505 & 0.0565 \\
-42 & 0.1722 & 0.1692 & 0.1598 & 0.1408 & 0.0547 \\
-48 & 0.1619 & 0.1593 & 0.1508 & 0.1336 & 0.0536 \\
-54 & 0.1540 & 0.1516 & 0.1437 & 0.1278 & 0.0529 \\
-57.5833 & 0.1500 & 0.1477 & 0.1402 & 0.1250 & 0.0525 \\
+连续事件定位 & 207246.6 & 57.5685 & 0.150000 \\
+$60\ \mathrm{s}$网格复核 & 207300 & 57.5833 & 0.149984 \\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{table}
+
+由表\ref{tab:q3_results}可以看出，两种方法所得时刻仅相差$53.4\ \mathrm{s}$，小于程序的一个
+输出步长，因而选取$207300\ \mathrm{s}$作为最终结果是合理的。此外，通过对物料
+不同位置的水分浓度进行比较可以发现，物料表面处的水分浓度在$12.55\ \mathrm{h}$左右已经降至
+$0.15$，而中心处的水分浓度约在$57.58\ \mathrm{h}$才降至这一数值，前后相差
+$45.03\ \mathrm{h}$。
+
+这是由于物料表面的水分可以直接向外界扩散，而中心处的水分
+需要先从物料内部逐渐向表面迁移，这一过程所经过的距离较长，因而下降速度较慢。因此，
+整个物料何时能够达到干燥要求，这主要取决于中心位置的水分浓度。如果只根据
+表面位置进行判断，所得干燥时间将会偏小。
+
+全域最大水分浓度随时间的变化曲线如图\ref{fig:drying}所示。由图\ref{fig:drying}可以看出，
+随着干燥时间的增加，$M(t)$不断减小，并在$57.5685\ \mathrm{h}$附近降至
+$0.15$。此时继续计算至下一个$60\ \mathrm{s}$输出时刻，得到的全域最大水分浓度为
+$0.149984$，已经满足题目要求。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.82\textwidth]{drying_threshold.png}
-\caption{问题3与问题4全域最大水分浓度随时间演化曲线及60 s达标点定位}\label{fig:drying}
+\caption{全域最大水分浓度随时间的演化及$60\ \mathrm{s}$安全达标点定位}
+\label{fig:drying}
 \end{figure}
+
+图\ref{fig:q3_heatmaps} 给出了物料达到干燥要求前后温度场和水分场的变化情况。从图中可以看出，干燥开始后，
+物料表面处的水分浓度下降较快，而中心处下降相对较慢。在干燥后期，物料内部
+仍存在一定的水分浓度差异，中心处的水分浓度最后达到规定值，这与前面所得表面和中心
+位置的达标时间相符。
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{question3_heatmaps.png}
-\caption{问题3直至达标后0.5 h的温度场与水分场二维时空演化热力图}\label{fig:q3_heatmaps}
+\caption{问题3直至达标后$0.5\ \mathrm{h}$的温度场与水分场二维时空演化热力图}
+\label{fig:q3_heatmaps}
 \end{figure}
+
+根据上述计算，在固定半径条件下，物料达到干燥要求的时间为
+$207300\ \mathrm{s}$。由于中心处的水分浓度下降最慢，因而只有当物料各位置
+水分浓度的最大值低于$0.15$时，才说明整个物料已经达到要求。如果只考察物料表面
+位置的水分浓度，则会过早结束计算，所得到的干燥时间也会小于实际所需时间。
 
 \subsection{问题4：收缩域下的干燥终点}
 
@@ -891,10 +1004,10 @@ $\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
 \caption{问题4移动物理域温湿场时空演化热力图（白色区域为药材收缩后的外部空间）}\label{fig:q4_heatmaps}
 \end{figure}
 
-\section{模型检验、机理探讨与拓展评价}
+\section{模型检验与评价}
 
 \subsection{数值算法可靠性}
-随着径向网格的逐步加密，各问计算结果单调收敛至高精度数值极限。问题3将径向网格由 401 节点逐步加密至 801 节点与 1201 节点，干燥时长由 57.75 h 收敛至 57.57 h 与 57.54 h，加密相对变化仅为 \QThreeGridChange；问题4由 321 节点加密至 601 节点与 801 节点，时长高度稳定在 52.71 h，相对变化仅为 \QFourGridChange。具体网格测试数据汇总于表\ref{tab:grid}，充分证明正式计算所选取的网格密度已完全处于渐近网格无关区。
+随着径向网格的加密，各问计算结果收敛至高精度极限。问题3将径向网格由 401 节点逐步加密至 801 节点与 1201 节点，干燥时长由 57.75 h 收敛至 57.57 h 与 57.54 h，加密相对变化仅为 \QThreeGridChange；问题4由 321 节点加密至 601 节点与 801 节点，时长稳定在 52.71 h，相对变化仅为 \QFourGridChange。具体网格测试数据见表\ref{tab:grid}，可以充分证明：正式计算所选取的网格密度已处于渐近网格无关区。
 
 \begin{table}[H]
 \centering
@@ -911,17 +1024,44 @@ $\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
 \end{tabular}
 \end{table}
 
-\subsection{烘干主导控速机理与参数敏感性分析}
-运行支撑材料中的参数敏感性分析模块（\texttt{sensitivity\_analysis.py}），针对影响干燥动力学的三个核心外界与物性参数——换热系数 $h$、传质系数 $h_m$ 及有效扩散系数 $D$ 分别施加 $\pm 10\%$ 的独立局部摄动：
-\begin{enumerate}[label=(\arabic*)]
-  \item \textbf{对流换热系数 $h$}：改变 $\pm 10\%$，问题三与问题四达标时间变化均不足 $0.02\%$。这是因为药材导热响应极快（数十分钟内即趋于近均匀），在漫长的中后期恒温脱水干燥阶段，外部传热能力已完全充裕，换热强弱不再制约干燥进程；
-  \item \textbf{表面对流传质系数 $h_m$}：改变 $\pm 10\%$，问题三达标时间变化约 $+1.26\% / -0.99\%$，问题四变化约 $+0.59\% / -0.45\%$，表现为较弱的次要影响；
-  \item \textbf{内部有效水分扩散系数 $D$}：改变 $\pm 10\%$，问题三达标时间剧烈变化 $+9.86\% / -8.03\%$，问题四达标时间剧烈变化 $+9.65\% / -7.88\%$，呈现出近乎一阶正比例的极端敏感性。
-\end{enumerate}
-上述定量敏感性分析深刻揭示：\textbf{内部水分向外迁移的扩散阻力是制约整个烘干过程完成快慢的绝对控速步骤（Rate-Limiting Step）}。这一结论不仅在物理机理上完美解释了为何附录4材料本征扩散系数的微弱降低会导致干燥时长成倍激增，更强力证实了烘干工业界“强化内部传质驱动力比盲目提高热风风速更为有效”的核心工艺常识。
+\subsection{参数敏感性分析}
+运行参数敏感性分析模块（\texttt{sensitivity\_analysis.py}），分别对$h$、$h_m$ 和 $D$ 施加 $\pm10\%$ 的独立局部摄动，对问题3、4达标时间的影响见表\ref{tab:sensitivity}。
 
-\subsection{几何收缩机制解耦与拟对流输运拓展讨论}\label{sec:mechanism_decoupling}
-在问题4中，烘干进程受到“材料物性改变（附录3 $\to$ 附录4）”与“宏观半径收缩（固定 2 cm $\to$ 动态收缩）”的双重耦合影响。为清晰辨识各自的物理贡献，设立四组对照算例开展解耦分析（见图\ref{fig:shrinkage}与图\ref{fig:radius_comp}）：
+\begin{table}[H]
+\centering
+\caption{核心参数的局部敏感性分析结果}\label{tab:sensitivity}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.20}
+\begin{tabular}{>{\centering\arraybackslash}p{2.6cm}
+>{\centering\arraybackslash}p{2.7cm}
+>{\centering\arraybackslash}p{2.7cm}p{5.2cm}}
+\toprule
+改变的参数 & 问题3影响 & 问题4影响 & \multicolumn{1}{c}{评价}\\
+\midrule
+$h$ 减小 $10\%$ & 小于 $0.02\%$ & 小于 $0.02\%$ &
+\multirow{2}{5.2cm}{基本不敏感，外部换热不是控速环节}\\
+\cmidrule(lr){1-3}
+$h$ 增大 $10\%$ & 小于 $0.02\%$ & 小于 $0.02\%$ &\\
+\midrule
+$h_m$ 减小 $10\%$ & $+1.26\%$ & $+0.59\%$ &
+\multirow{2}{5.2cm}{弱敏感，表面对流传质仅产生次要影响}\\
+\cmidrule(lr){1-3}
+$h_m$ 增大 $10\%$ & $-0.99\%$ & $-0.45\%$ &\\
+\midrule
+$D$ 减小 $10\%$ & $+9.86\%$ & $+9.65\%$ &
+\multirow{2}{5.2cm}{高度敏感，内部水分扩散是主导控速环节}\\
+\cmidrule(lr){1-3}
+$D$ 增大 $10\%$ & $-8.03\%$ & $-7.88\%$ &\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+由表\ref{tab:sensitivity}可见，$h$ 的变化几乎不影响干燥终点，$h_m$ 仅产生较弱影响，而 $D$ 改变后两问的达标时间近似同比变化。因此，内部水分向外迁移的扩散阻力是烘干过程的主要控速环节；工艺优化应优先强化内部传质。
+
+\subsection{几何收缩机制解耦讨论}
+\label{sec:mechanism_decoupling}
+在问题4中，烘干进程受到“物性改变”与“半径收缩”的双重耦合影响。为清晰辨识各自的贡献，设立四组对照算例开展解耦分析（见图\ref{fig:shrinkage}与图\ref{fig:radius_comp}）：
 
 \subsubsection{材料本征阻力与几何收缩效应的解耦对照}
 \begin{enumerate}[label=(\arabic*)]
@@ -929,7 +1069,7 @@ $\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
   \item \textbf{算例 B（物性置换对照）}：采用附录4物性、保持固定半径 2 cm，达标时长大幅延长至 \AppendixFourFixedHours\ h（增加 \AppendixIncrease，即长达 5.42 天！）。这清晰表明附录4所表征的多孔材料其内部孔隙扩散阻力远高于附录3；
   \item \textbf{算例 C（问题4完整收缩）}：采用附录4物性且计入实测动态收缩，达标时长大幅削减至 \QFourDryHours\ h。相对固定半径（算例 B）缩短了 77.3 h，降幅高达 \ShrinkReduction，干燥整体速率提升了 2.47 倍！
 \end{enumerate}
-算例 B 与算例 C 的剧烈反差雄辩地证明：\textbf{几何收缩显著缩短了物料内部水分向表面析出的特征扩散距离（$\tau \propto R^2$），是抵消材料本征大扩散阻力、加速干燥完成的最关键机制}。若在烘干建模中忽略物料收缩，将会产生高达数天的严重虚假滞后误差。
+算例 B 与算例 C 的剧烈反差证明：\textbf{几何收缩显著缩短了物料内部水分向表面析出的特征扩散距离（$\tau \propto R^2$），是抵消材料本征大扩散阻力、加速干燥完成的最关键机制}。若在烘干建模中忽略物料收缩，将会产生高达数天的严重滞后误差。
 
 \begin{figure}[H]
 \centering
@@ -942,19 +1082,12 @@ $\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
 \caption{附件2药材半径实测变化曲线（左）与不同模型烘干达标时间对比柱状图（右）}\label{fig:radius_comp}
 \end{figure}
 
-\subsubsection{坐标变换拟对流输运项的必要性与影响评估}
-为评估将物理移动域映射至固定相对坐标时所产生的拟对流几何输运项 $\xi\frac{\dot{R}}{R}\frac{\partial\phi}{\partial\xi}$ 对计算精度的影响，设立敏感性对照算例：
-\begin{itemize}
-  \item \textbf{算例 D（输运项敏感性对照）}：采用附录4物性与附件2收缩，但在控制方程中人为略去该几何输运项（仅保留 $R^{-2}(t)$ 尺度缩放）。
-\end{itemize}
-计算表明，算例 D 的达标时长为 \NoCoordinateCaseHours\ h，相较完整模型（52.72 h）低估了 \OmitCoordinateDifference（约 2.98\%，绝对偏差达 1.57 h）。这定量证明：尽管该几何项不改变干燥总时长处于“约2.2天”的大数量级，但它对精确满足赛题四位小数精度要求具有决定性影响，在严谨的移动边界连续介质力学模拟中不可随意舍去。
-
-\subsection{模型优缺点评价与改进展望}
-\subsubsection{模型主要优点}
+\subsection{模型评价与展望}
+\subsubsection{模型优点}
 \begin{enumerate}[label=(\arabic*)]
-  \item \textbf{框架高度统一且复用性强}：四问严格共享同一套基于广义守恒变量的空间半离散线方法体系，仅需切换对应的物性函数与边界条件，算法架构整洁优美；
-  \item \textbf{严格保持局部与全局守恒性}：空间离散采用几何柱面加权的顶点中心有限体积法，内部界面通量形成严格的望远镜级数对消，机器浮点精度级别满足质量与能量守恒；
-  \item \textbf{超刚性方程的高效极速求解}：引入两场三点紧凑模式的稀疏雅可比矩阵优化（CSR），配合自适应高阶 BDF 隐式积分推进，在保证绝对数值稳定性的前提下，实现长达 72 h 跨度物理全过程的秒级极速求解；
+  \item \textbf{框架高度统一可复用}：四问严格共享同一组热质耦合方程组，和同一套空间半离散线数值计算方法，仅需切换对应的物性函数与边界条件，算法架构整洁优美；
+  \item \textbf{自然满足通量条件}：空间离散采用有限体积法，内部界面通量形成严格的望远镜级数对消，机器浮点精度级别满足质量与能量守恒；
+  \item \textbf{超刚性方程的高效求解}：引入两场三点紧凑模式的稀疏雅可比矩阵优化（CSR），配合自适应高阶 BDF 隐式积分推进，在保证绝对数值稳定性的前提下，实现长达 72 h 跨度物理全过程的秒级极速求解；
   \item \textbf{移动边界处理兼备严格性与实用性}：通过 Landau 相对坐标归一化彻底规避了动网格重划分的插值误差，完整保留了几何收缩双重机制，并构建了连续事件与 60 s 输出网格双重达标判定体系。
 \end{enumerate}
 
@@ -965,7 +1098,7 @@ $\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
   \item \textbf{二维轴对称与端部效应深化}：对于长径比较小的短柱药材，两端面的吸热与排湿不可忽视，可进一步拓展至 $(r,z)$ 二维有限体积求解器。
 \end{enumerate}
 
-\subsection{结论与支撑材料复现说明}
+\subsection{结论}
 \subsubsection{主要研究结论}
 \begin{enumerate}[label=(\arabic*)]
   \item 烘干初期温度场在 30 min 内迅速建立并在 3 h 内高度接近热平衡，而水分场的迁移具有显著的时间滞后性，全过程由中心最晚达到阈值；
@@ -973,18 +1106,18 @@ $\partial_r=R^{-1}\partial_\xi$，原方程化为固定域上的联立系统
   \item 几何收缩是克服材料内部大扩散阻力的最关键驱动机制，能使干燥整体提速达 2.47 倍。
 \end{enumerate}
 
-\subsubsection{支撑材料组织与一键复现指南}
-本研究交付的支撑材料采用模块化、轻量级与全流程一键复现架构，代码结构与文件组织如下：
+\subsubsection{支撑材料清单}
+本文的支撑材料采用“输入数据—模块化数值求解—结果输出—独立校验”的结构，提交包位于 \texttt{A题\_支撑材料\_提交版/}，主要内容如下：
+\begingroup\small\raggedright
 \begin{enumerate}[label=(\arabic*)]
-  \item \textbf{一键复现主入口（\texttt{run\_all.py}）}：依次自动调用核心求解器驱动四问计算、输出标准 Excel 工作簿（\texttt{result1.xlsx}--\texttt{result4.xlsx}）、执行敏感性分析并完成全套数据指标校验；
-  \item \textbf{核心算法求解模块（\texttt{src/drying\_solver.py}）}：基于有限体积线方法与 SciPy 刚性 BDF 求解器实现全过程数值积分、稀疏雅可比模式构建、事件检测与图件渲染；
-  \item \textbf{参数敏感性分析模块（\texttt{src/sensitivity\_analysis.py}）}：独立开展 $\pm 10\%$ 参数摄动实验并输出结构化指标；
-  \item \textbf{依赖环境与运行}：依赖包仅需 NumPy、SciPy、openpyxl、Pandas 与 Matplotlib。在支撑材料目录下仅需运行命令：
-  \begin{verbatim}
-  python run_all.py
-  \end{verbatim}
-  即可在 1--2 分钟内确定性、无损地全自动复现论文中的全部数值解、图表与 Excel 结果。
+  \item \textbf{输入数据：} \texttt{data/附件1.xlsx}（烘房温度与水分浓度）和 \texttt{data/附件2.xlsx}（药材半径变化）；
+  \item \textbf{求解源码：} \texttt{src/config.py}（配置）、\texttt{src/models.py}（数据结构）、\texttt{src/data\_io.py}（附件读取）、\texttt{src/physics.py}（物性参数）、\texttt{src/solver.py}（有限体积法与 BDF）、\texttt{src/sampling.py}（采样与达标判定）、\texttt{src/excel\_output.py}（Excel 输出）、\texttt{src/plotting.py}（图表生成）和 \texttt{src/workflow.py}（四问流程）；
+  \item \textbf{分析与入口：} \texttt{run\_all.py}（一键复现）、\texttt{src/sensitivity\_analysis.py}（参数敏感性分析）以及保留兼容调用的 \texttt{src/drying\_solver.py}；
+  \item \textbf{结果文件：} \texttt{result/result1.xlsx}--\texttt{result/result4.xlsx}，分别对应问题1至问题4；\texttt{result/summary.json} 保存代表点、达标时间和网格检验，\texttt{result/parameter\_sensitivity.json} 保存参数敏感性结果，\texttt{result/validation.json} 保存自动校验报告；
+  \item \textbf{图表与说明：} \texttt{report/figures/} 中的论文图表，以及 \texttt{README.md}、\texttt{requirements.txt} 和本清单。
 \end{enumerate}
+在提交包根目录执行 \texttt{python run\_all.py} 可完成四问求解、结果导出、图表生成、敏感性分析与完整性校验；若仅复现四问和图表，可使用 \texttt{python run\_all.py --skip-sensitivity}。
+\endgroup
 
 \begin{thebibliography}{9}
 \bibitem{crank} Crank J. \textit{The Mathematics of Diffusion}. 2nd ed. Oxford: Clarendon Press, 1975.
