@@ -1,0 +1,23 @@
+{
+  "source_data": [
+    "data/附件1.xlsx",
+    "data/附件2.xlsx",
+    "result/summary.json"
+  ],
+  "solver": "src/drying_solver.py",
+  "figure_builder": "rebuild_figures.py",
+  "raster_dpi": 600,
+  "figures": [
+    "drying_threshold.png",
+    "grid_convergence.png",
+    "question1_heatmaps.png",
+    "question1_profiles.png",
+    "question2_heatmaps.png",
+    "question2_profiles.png",
+    "question3_heatmaps.png",
+    "question4_heatmaps.png",
+    "radius_and_comparison.png",
+    "shrinkage_effect.png"
+  ],
+  "notes": "仅生成论文实际引用的10张图。温度场采用低温浅、高温深的连续色标，最高温端为#5202a3；水分浓度场采用低值浅、高值深的连续色标。drying_threshold仅保留问题3，radius_and_comparison采用三模型方案。"
+}

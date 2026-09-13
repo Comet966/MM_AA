@@ -1,0 +1,50 @@
+{
+  "status": "pass",
+  "workbooks": {
+    "result1.xlsx": {
+      "status": "pass",
+      "sheets": [
+        "温度",
+        "水分浓度"
+      ],
+      "rows": 1801,
+      "cols": 22
+    },
+    "result2.xlsx": {
+      "status": "pass",
+      "sheets": [
+        "温度",
+        "水分浓度"
+      ],
+      "rows": 10801,
+      "cols": 22
+    },
+    "result3.xlsx": {
+      "status": "pass",
+      "sheets": [
+        "Sheet1"
+      ],
+      "rows": 3486,
+      "cols": 22
+    },
+    "result4.xlsx": {
+      "status": "pass",
+      "sheets": [
+        "Sheet1"
+      ],
+      "rows": 3194,
+      "cols": 23
+    }
+  },
+  "strict_threshold": {
+    "question3_time_s": 207300.0,
+    "question3_raw_max": 0.14998444058619312,
+    "question4_time_s": 189780.0,
+    "question4_raw_max": 0.1499940662581558
+  },
+  "figures": {
+    "count": 10,
+    "status": "pass"
+  },
+  "sensitivity": "pass"
+}
